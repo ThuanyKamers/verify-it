@@ -7,7 +7,7 @@
 
 import type { MessageKey } from '../i18n'
 import { parseListingUrl } from './url'
-import { clean, isValidRenavam, isValidVin, normalizePlate, normalizeRenavam } from './validation'
+import { clean, isValidRenavam, isValidVin, normalizePlate, normalizeRenavam, type PlateCountry } from './validation'
 
 /** Dados do anúncio no marketplace do Verify It: o que o vendedor informa, mais detalhes de exemplo dos dados de demonstração. */
 export interface ListingAd {
@@ -84,6 +84,8 @@ export function missingDocuments(files: DocumentFiles): DocumentKind[] {
 export interface RegisterInput {
   url: string
   plate: string
+  /** País da placa; sem país, aceita o formato de qualquer país. */
+  plateCountry?: PlateCountry
   vin: string
   renavam: string
   make: string
@@ -160,7 +162,7 @@ export function register(
   const errors: RegisterError[] = []
   const parsed = parseListingUrl(input.url)
   if (!parsed) errors.push('invalidUrl')
-  const plate = normalizePlate(input.plate)
+  const plate = normalizePlate(input.plate, input.plateCountry)
   if (!plate) errors.push('invalidPlate')
   if (!isValidVin(input.vin)) errors.push('invalidVin')
   if (!isValidRenavam(input.renavam)) errors.push('invalidRenavam')
@@ -216,7 +218,7 @@ function buildAd(input: RegisterInput): ListingAd | undefined {
   return Object.values(ad).some((v) => v !== undefined) ? ad : undefined
 }
 
-export function check(state: AppState, input: { url: string; plate?: string }): CheckResult {
+export function check(state: AppState, input: { url: string; plate?: string; plateCountry?: PlateCountry }): CheckResult {
   const parsed = parseListingUrl(input.url)
   if (!parsed) return { status: 'invalid', reasons: [], related: [], reportCount: 0 }
 
@@ -234,7 +236,7 @@ export function check(state: AppState, input: { url: string; plate?: string }): 
 
   if (listing?.status === 'sold') reasons.push('sold')
 
-  const plate = (input.plate && normalizePlate(input.plate)) || undefined
+  const plate = (input.plate && normalizePlate(input.plate, input.plateCountry)) || undefined
   if (plate) {
     related = active.filter((l) => l.plate === plate)
     if (related.some((l) => l.site === parsed.site)) reasons.push('plateOnOtherUrl')

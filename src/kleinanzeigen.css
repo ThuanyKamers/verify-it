@@ -1,0 +1,91 @@
+/* Cópia do Kleinanzeigen: fundo bege-claro, caixas brancas, botões em pílula verde-limão. */
+.ka { --ka-bg: #f4f4f0; --ka-lime: #b5e941; --ka-green: #1d4b00; --ka-link: #326916; --ka-line: #d7d7cf; --ka-sub: #5e5e5a; min-height: 100vh; background: var(--ka-bg); color: #1a1a1a; font: 400 0.95rem/1.45 system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
+.ka h1, .ka h2, .ka h3 { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; letter-spacing: 0; }
+.ka a { color: var(--ka-link); text-decoration: none; }
+.ka a:hover { text-decoration: underline; }
+.ka-icon { flex: none; width: 1.1em; height: 1.1em; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+.ka-top { background: #fff; border-bottom: 1px solid var(--ka-line); }
+.ka-wrap { max-width: 61rem; margin: 0 auto; padding: 0 1rem; }
+.ka-top .ka-wrap { padding-top: 0.8rem; padding-bottom: 0.8rem; }
+.ka-logo { color: var(--ka-green); font: 800 1.6rem/1 system-ui, sans-serif; letter-spacing: -0.03em; }
+.ka-logo::first-letter { color: var(--ka-link); }
+
+.ka-crumb { margin: 0.9rem 0 0.6rem; font-size: 0.85rem; color: var(--ka-link); }
+.ka-grid { display: grid; grid-template-columns: minmax(0, 1fr) 19.75rem; gap: 1rem; align-items: start; }
+.ka-main { display: grid; gap: 0.75rem; min-width: 0; }
+.ka-box { margin: 0; padding: 1rem; background: #fff; border-radius: 2px; }
+.ka-box h2 { margin: 0 0 0.9rem; padding-bottom: 0.9rem; border-bottom: 1px solid var(--ka-line); font-size: 1rem; font-weight: 700; }
+.ka-box h3 { margin: 1rem 0 0.5rem; font-size: 0.95rem; font-weight: 700; }
+
+.ka-gallery { position: relative; overflow: hidden; aspect-ratio: 4 / 3; background: #ddd; }
+.ka-backdrop { position: absolute; inset: -2rem; filter: blur(22px) brightness(1.05); opacity: 0.7; }
+.ka-backdrop > *, .ka-photo > * { display: block; width: 100%; height: 100%; }
+.ka-backdrop .vehicle-photo { object-fit: cover; }
+.ka-photo { position: absolute; inset: 0; }
+.ka-photo .vehicle-photo { object-fit: contain; }
+.ka-arrow { position: absolute; top: 50%; display: grid; place-items: center; width: 2.6rem; height: 2.75rem; margin-top: -1.375rem; border: 0; background: rgba(30, 30, 30, 0.85); color: #fff; cursor: pointer; }
+.ka-arrow .ka-icon { width: 1.4rem; height: 1.4rem; }
+.ka-arrow:disabled { opacity: 0.55; cursor: default; }
+.ka-prev { left: 0; }
+.ka-next { right: 0; }
+.ka-count { position: absolute; right: 0.9rem; bottom: 0.9rem; display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.2rem 0.5rem; border-radius: 4px; background: rgba(30, 30, 30, 0.85); color: #fff; font-size: 0.85rem; font-weight: 600; }
+.ka-credit { margin: -0.4rem 0 0; color: var(--ka-sub); font-size: 0.75rem; }
+.ka-credit a { color: inherit; text-decoration: underline; }
+.ka-thumbs { display: flex; gap: 0.4rem; margin-top: -0.4rem; }
+.ka-thumbs button { width: 4.5rem; padding: 0; border: 2px solid transparent; background: none; cursor: pointer; }
+.ka-thumbs button.on { border-color: var(--ka-link); }
+
+.ka-head h1 { margin: 0 0 0.4rem; font-size: 1.35rem; font-weight: 700; line-height: 1.25; }
+.ka-price { margin: 0 0 0.9rem; color: var(--ka-link); font-size: 1.4rem; font-weight: 700; }
+.ka-price span { color: var(--ka-sub); font-size: 0.9rem; font-weight: 400; }
+.ka-meta { display: flex; align-items: center; gap: 0.4rem; margin: 0.3rem 0 0; color: var(--ka-sub); font-size: 0.9rem; }
+.ka-views { display: inline-flex; align-items: center; gap: 0.3rem; margin-left: 0.6rem; }
+
+.ka-details { display: grid; grid-template-columns: 1fr 1fr; gap: 0 2rem; margin: 0; }
+.ka-details div { display: flex; justify-content: space-between; gap: 1rem; padding: 0.45rem 0; border-bottom: 1px solid #ecece6; }
+.ka-details dt { color: var(--ka-sub); }
+.ka-details dd { margin: 0; font-weight: 600; text-align: right; }
+.ka-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0; padding: 0; list-style: none; }
+.ka-chips li { padding: 0.25rem 0.7rem; border-radius: 999px; background: #eef7dd; color: var(--ka-green); font-size: 0.85rem; }
+.ka-desc { margin: 0; white-space: pre-line; }
+
+.ka-side { display: grid; gap: 0.75rem; }
+.ka-btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; min-height: 2.75rem; padding: 0.5rem 1.2rem; border: 2px solid var(--ka-line); border-radius: 999px; background: #fff; color: var(--ka-green); font: 700 0.9rem system-ui, sans-serif; cursor: pointer; }
+.ka-btn:hover { border-color: var(--ka-green); }
+.ka-btn-primary { border-color: var(--ka-lime); background: var(--ka-lime); }
+.ka-btn-primary:hover { border-color: #a3d930; background: #a3d930; }
+.ka-btn-inline { justify-self: start; }
+.ka-btn-small { min-height: 2.5rem; padding: 0.3rem 1rem; }
+
+.ka-seller { display: grid; gap: 0.9rem; }
+.ka-seller-row { display: flex; gap: 0.9rem; padding-bottom: 0.9rem; border-bottom: 1px solid var(--ka-line); }
+.ka-avatar { background: #d5d5cf; color: #4a4a46; }
+.ka-seller-name { font-weight: 700; }
+.ka-sub { display: flex; align-items: flex-start; gap: 0.35rem; margin: 0.3rem 0 0; color: var(--ka-sub); font-size: 0.875rem; }
+.ka-sub .ka-icon { margin-top: 0.15em; }
+.ka-seller .ka-btn-small { justify-self: end; }
+.ka-id { display: flex; justify-content: space-between; font-size: 0.875rem; }
+.ka-id dd { margin: 0; }
+
+.ka-related { margin: 2.5rem 0 3rem; }
+.ka-related > h2 { margin: 0 0 0.9rem; font-size: 1.3rem; font-weight: 700; }
+.ka-related ul { display: grid; gap: 0.75rem; margin: 0; padding: 0; list-style: none; }
+.ka-item { display: grid; grid-template-columns: 12.5rem minmax(0, 1fr); gap: 1rem; }
+.ka-item-photo { display: block; overflow: hidden; aspect-ratio: 4 / 3; }
+.ka-item-photo > * { display: block; width: 100%; height: 100%; }
+.ka-item-photo .vehicle-photo { object-fit: cover; }
+.ka-item-meta { display: flex; justify-content: space-between; gap: 1rem; margin: 0; color: var(--ka-sub); font-size: 0.85rem; }
+.ka-item-meta span { display: inline-flex; align-items: center; gap: 0.3rem; }
+.ka-item h3 { margin: 0.3rem 0; font-size: 1.05rem; font-weight: 700; }
+.ka-item h3 a { color: #1a1a1a; }
+.ka-item-desc { display: -webkit-box; margin: 0; overflow: hidden; color: var(--ka-sub); -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.ka-item-price { margin: 0.4rem 0 0; color: var(--ka-link); font-weight: 700; }
+
+@media (max-width: 52rem) {
+  .ka-grid { grid-template-columns: 1fr; }
+  .ka-details { grid-template-columns: 1fr; }
+  .ka-item { grid-template-columns: 7.5rem minmax(0, 1fr); }
+  .ka-item-meta { flex-direction: column; gap: 0; }
+}
+.ka .mp-demo a { color: #fff; }
