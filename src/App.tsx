@@ -3,6 +3,7 @@ import { LANGUAGES, useI18n, type MessageKey } from './i18n'
 import { loadRole, saveRole, type Role } from './lib/session'
 import { useAppState } from './lib/store'
 import { scrollToTop, startSmoothScroll } from './lib/smoothScroll'
+import { startHorn } from './lib/horn'
 import { ActivityPage } from './pages/ActivityPage'
 import { CheckPage } from './pages/CheckPage'
 import { HowPage } from './pages/HowPage'
@@ -56,6 +57,7 @@ export function App() {
   const app = useAppState()
 
   useEffect(() => startSmoothScroll(), [])
+  useEffect(() => startHorn(), [])
 
   useEffect(() => {
     const onHash = () => {
