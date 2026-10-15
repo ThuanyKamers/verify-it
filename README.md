@@ -4,6 +4,8 @@ Prototype of a platform that helps used-vehicle buyers find out whether an onlin
 
 **Live site:** https://thuanykamers.github.io/verify-it/
 
+Verify It started at the Techstars Startup Weekend Cyber Security São José 2025, where the team built the first MVP (then called **verifiCAR**) and won 3rd place.
+
 ## The problem
 
 Vehicle-listing scams caused R$ 2.7 billion in losses to 91,000 victims (Veja Negócios). In the Startup Weekend survey, 80% of respondents had already faced a scam attempt and 100% would use a verification platform. The most common scam is the cloned listing: the scammer copies photos and details from a real listing and posts them again, on the same site, with a different contact.
@@ -21,7 +23,11 @@ On opening the site, the person goes through a simulated login and picks **I'm a
 
 The full flow is in [docs/fluxo.png](docs/fluxo.png).
 
-For Facebook listings, the "Go to the original listing" button opens a demo copy of a marketplace page built from the registered data (with real photos of the sample vehicles, or drawn illustrations when no photo matches).
+## Marketplace and listing pages
+
+Verify It has its own marketplace of cars and motorcycles registered by their owners, with search by make or model, type (car or motorcycle), city with a radius in km, and sorting by date or price. Each vehicle has its own listing page inside Verify It (`#/market/{checkId}`), with photos, details and links to the same vehicle on every site where it is verified. **Contact the owner** opens a message pop-up.
+
+Each registered link opens a demo copy of the original listing page, without login. Kleinanzeigen, mobile.de, AutoScout24, leboncoin and Facebook Marketplace are rebuilt in each site's current layout (desktop and mobile); OLX, Standvirtual, Webmotors and Mercado Livre use a generic classifieds layout. The demo copies are built from the registered data, with real photos of the sample vehicles, or drawn illustrations when no photo matches.
 
 ## Vehicle photos
 
