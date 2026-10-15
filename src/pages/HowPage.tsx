@@ -20,11 +20,6 @@ export function HowPage() {
         ))}
       </ol>
 
-      <aside className="principle">
-        <h2>{t('how.noSeal.title')}</h2>
-        <p>{t('how.noSeal.body')}</p>
-      </aside>
-
       <h2 className="section-title">{t('how.stats.title')}</h2>
       <dl className="figures">
         <div><dt>{t('how.stats.loss')}</dt><dd>{money}</dd></div>

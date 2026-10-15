@@ -19,8 +19,6 @@ Ao abrir o site, a pessoa passa por um login simulado e escolhe **Sou vendedor**
    - 🚨 **Possível golpe:** o veículo tem anúncio verificado em outro link do mesmo site, o dono marcou como vendido, ou o link foi denunciado.
    - ❔ **Não verificado:** não há registro; se o veículo estiver verificado em outro site, mostramos o link oficial.
 
-Não há selo nem QR code no anúncio de propósito: um golpista poderia copiar a imagem. A confiança vem de o comprador consultar o Verify It por conta própria.
-
 O fluxo completo está em [docs/fluxo.png](docs/fluxo.png).
 
 ## Idiomas
