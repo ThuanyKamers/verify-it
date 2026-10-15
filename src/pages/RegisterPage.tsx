@@ -10,9 +10,9 @@ type Props = ReturnType<typeof useAppState>
 
 const EMPTY: RegisterInput = { url: '', plate: '', vin: '', renavam: '', make: '', model: '', year: '', proofFileName: '' }
 
-/** Dados de exemplo: o mesmo Civic da demonstração, agora anunciado no mobile.de. */
+/** Dados de exemplo: o mesmo Civic da demonstração, agora anunciado no Kleinanzeigen. */
 const DEMO: RegisterInput = {
-  url: 'https://www.mobile.de/auto-inserat/honda-civic-2-0-exl/447712345.html',
+  url: 'https://www.kleinanzeigen.de/s-anzeige/honda-civic-exl-2019/2845123456-216-3331',
   plate: 'B KM 4821',
   vin: 'JHMFC2650KS100001',
   renavam: '0123456789' + renavamCheckDigit('0123456789'),

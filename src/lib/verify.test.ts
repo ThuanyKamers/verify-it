@@ -97,7 +97,7 @@ describe('consulta do comprador', () => {
   })
 
   it('aponta golpe quando o veículo já foi vendido', () => {
-    const res = check(seed, { url: 'https://www.kleinanzeigen.de/s-anzeige/vw-golf-vii-1-6-tdi/2734567890-216-9054' })
+    const res = check(seed, { url: 'https://www.leboncoin.fr/ad/voitures/2734567890' })
     expect(res.status).toBe('scam')
     expect(res.reasons).toEqual(['sold'])
   })

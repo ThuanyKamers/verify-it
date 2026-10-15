@@ -51,11 +51,13 @@ export function mockDetails(l: Listing): MockDetails {
   return BY_PLATE[l.plate] ?? FALLBACK
 }
 
-export type SiteTheme = 'facebook' | 'kleinanzeigen' | 'olx' | 'webmotors' | 'mercadolivre' | 'generic'
+export type SiteTheme = 'facebook' | 'kleinanzeigen' | 'standvirtual' | 'leboncoin' | 'olx' | 'webmotors' | 'mercadolivre' | 'generic'
 
 export const SITE_NAMES: Record<SiteTheme, string> = {
   facebook: 'Marketplace',
   kleinanzeigen: 'Kleinanzeigen',
+  standvirtual: 'STANDVIRTUAL',
+  leboncoin: 'leboncoin',
   olx: 'OLX',
   webmotors: 'webmotors',
   mercadolivre: 'mercado livre',
@@ -65,6 +67,8 @@ export const SITE_NAMES: Record<SiteTheme, string> = {
 export function siteTheme(site: string): SiteTheme {
   if (site.includes('facebook')) return 'facebook'
   if (site.includes('kleinanzeigen')) return 'kleinanzeigen'
+  if (site.includes('standvirtual')) return 'standvirtual'
+  if (site.includes('leboncoin')) return 'leboncoin'
   if (site.includes('olx')) return 'olx'
   if (site.includes('webmotors')) return 'webmotors'
   if (site.includes('mercadolivre')) return 'mercadolivre'
