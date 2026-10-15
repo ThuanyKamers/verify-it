@@ -20,6 +20,8 @@ export function CheckPage({ state, update }: Props) {
   const [reported, setReported] = useState(false)
   // Muda a cada consulta para que o carimbo "bata" de novo, mesmo com o mesmo resultado.
   const [run, setRun] = useState(0)
+  // Posição do próximo exemplo de anúncio verificado: cada clique mostra outro veículo, em outro site.
+  const [nextVerified, setNextVerified] = useState(0)
 
   function runCheck(nextUrl: string, nextPlate: string, country: PlateCountry = plateCountry) {
     const res = check(state, { url: nextUrl, plate: nextPlate, plateCountry: country })
@@ -41,6 +43,21 @@ export function CheckPage({ state, update }: Props) {
     setPlate(examplePlate)
     setPlateCountry('DE')
     runCheck(exampleUrl, examplePlate, 'DE')
+  }
+
+  /** Anúncios ativos em ordem embaralhada: o próximo nunca repete o veículo nem o site do anterior. */
+  function tryVerified() {
+    const active = state.listings.filter((l) => l.status === 'active').sort((a, b) => shuffleKey(a.checkId) - shuffleKey(b.checkId))
+    if (active.length === 0) return tryExample(DEMO_URLS.verified)
+    const last = result?.status === 'verified' ? result.listing : undefined
+    let i = nextVerified % active.length
+    for (let tries = 0; tries < active.length; tries++) {
+      const l = active[i]
+      if (!last || (l.plate !== last.plate && l.site !== last.site)) break
+      i = (i + 1) % active.length
+    }
+    setNextVerified(i + 1)
+    tryExample(active[i].url)
   }
 
   function report() {
@@ -77,7 +94,7 @@ export function CheckPage({ state, update }: Props) {
 
       <div className="examples">
         <span>{t('check.examples')}</span>
-        <button type="button" className="text-button" onClick={() => tryExample(DEMO_URLS.verified)}>{t('check.example.verified')}</button>
+        <button type="button" className="text-button" onClick={tryVerified}>{t('check.example.verified')}</button>
         <button type="button" className="text-button" onClick={() => tryExample(DEMO_URLS.cloned, DEMO_URLS.clonedPlate)}>{t('check.example.cloned')}</button>
         <button type="button" className="text-button" onClick={() => tryExample(DEMO_URLS.unknown)}>{t('check.example.unknown')}</button>
       </div>
@@ -145,6 +162,11 @@ export function CheckPage({ state, update }: Props) {
       )}
     </section>
   )
+}
+
+/** Ordem fixa, mas sem relação com a ordem de cadastro, para os exemplos variarem de site e de veículo. */
+function shuffleKey(id: string): number {
+  return [...id].reduce((h, c) => (h * 31 + c.charCodeAt(0)) % 1009, 7)
 }
 
 function siteOf(url: string): string {
