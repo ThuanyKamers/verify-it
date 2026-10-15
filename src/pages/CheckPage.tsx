@@ -104,7 +104,6 @@ export function CheckPage({ state, update }: Props) {
                 ]}
               />
               {result.reportCount > 0 && <p className="warning">{t('result.reportsWarning', { n: result.reportCount })}</p>}
-              <a className="button button-primary" href={listingHref(result.listing)} target="_blank" rel="noopener noreferrer">{t('result.openListing')}</a>
             </>
           )}
 
