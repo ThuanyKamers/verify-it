@@ -1,0 +1,470 @@
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
+
+export type Lang = 'pt' | 'en' | 'de'
+
+export const LANGUAGES: { code: Lang; label: string; htmlLang: string; locale: string }[] = [
+  { code: 'pt', label: 'Português', htmlLang: 'pt-BR', locale: 'pt-BR' },
+  { code: 'en', label: 'English', htmlLang: 'en', locale: 'en-US' },
+  { code: 'de', label: 'Deutsch', htmlLang: 'de', locale: 'de-DE' },
+]
+
+const pt = {
+  'brand.tagline': 'Confira se o anúncio do carro é verdadeiro antes de negociar.',
+  'nav.check': 'Verificar anúncio',
+  'nav.register': 'Cadastrar anúncio',
+  'login.title': 'Entrar no Verify It',
+  'login.lead': 'Escolha como você quer usar a plataforma.',
+  'login.email': 'E-mail',
+  'login.password': 'Senha',
+  'login.seller': 'Sou vendedor',
+  'login.sellerDesc': 'Cadastre e proteja os anúncios do seu veículo.',
+  'login.buyer': 'Sou comprador',
+  'login.buyerDesc': 'Confira se um anúncio é confiável antes de negociar.',
+  'login.simulated': 'Login simulado: qualquer e-mail e senha funcionam, e os campos podem ficar em branco.',
+  'header.role.seller': 'Vendedor',
+  'header.role.buyer': 'Comprador',
+  'header.logout': 'Sair',
+  'nav.how': 'Como funciona',
+  'nav.activity': 'Atividade',
+  'lang.label': 'Idioma',
+
+  'check.title': 'Esse anúncio é confiável?',
+  'check.lead': 'Cole o link do anúncio que você está vendo. Nós dizemos se ele foi verificado pelo dono do veículo.',
+  'check.url': 'Link do anúncio',
+  'check.urlPlaceholder': 'https://www.olx.com.br/autos-e-pecas/...',
+  'check.plate': 'Placa mostrada no anúncio (opcional)',
+  'check.plateHint': 'Com a placa conseguimos detectar anúncios clonados.',
+  'check.submit': 'Verificar',
+  'check.examples': 'Experimente com um exemplo:',
+  'check.example.verified': 'Anúncio verificado',
+  'check.example.cloned': 'Anúncio clonado',
+  'check.example.unknown': 'Anúncio desconhecido',
+
+  'result.verified.title': 'Anúncio verificado',
+  'result.verified.body': 'O dono deste veículo comprovou a propriedade e cadastrou exatamente este link.',
+  'result.scam.title': 'Possível golpe',
+  'result.scam.body': 'Não negocie nem faça pagamentos por este anúncio.',
+  'result.unverified.title': 'Anúncio não verificado',
+  'result.unverified.body': 'Este link não foi cadastrado pelo dono do veículo. Isso não prova que é golpe, mas redobre a atenção.',
+  'result.invalid.title': 'Link inválido',
+  'result.invalid.body': 'Confira se você copiou o endereço completo do anúncio.',
+  'reason.plateOnOtherUrl': 'Este veículo já tem um anúncio verificado em outro link do mesmo site. Este parece ser uma cópia.',
+  'reason.sold': 'O dono informou que este veículo já foi vendido.',
+  'reason.reported': 'Este link foi denunciado {n} vez(es) por outros compradores.',
+  'reason.knownOnOtherSites': 'Este veículo tem anúncio verificado em outro site. Prefira negociar pelo link oficial abaixo.',
+  'reason.notFound': 'Não encontramos registro deste link.',
+  'result.vehicle': 'Veículo',
+  'result.plate': 'Placa',
+  'result.site': 'Site',
+  'result.verifiedOn': 'Verificado em',
+  'result.checkId': 'Código da verificação',
+  'result.reportsWarning': 'Atenção: este link recebeu {n} denúncia(s).',
+  'result.related': 'Links oficiais deste veículo',
+  'result.openListing': 'Ir para o anúncio original',
+  'result.report': 'Denunciar este anúncio',
+  'result.reported': 'Denúncia registrada. Obrigado por ajudar outros compradores.',
+  'result.tips.title': 'Antes de pagar',
+  'result.tips.1': 'Veja o carro pessoalmente e confira placa e chassi.',
+  'result.tips.2': 'Nunca pague sinal antes de ver o veículo.',
+  'result.tips.3': 'Desconfie de preços muito abaixo da tabela FIPE.',
+
+  'register.title': 'Proteja seu anúncio',
+  'register.lead': 'Cadastre o link de cada anúncio do seu veículo. Quem for comprar cola o link aqui e sabe que ele é seu de verdade.',
+  'register.url': 'Link do anúncio',
+  'register.make': 'Marca',
+  'register.model': 'Modelo',
+  'register.year': 'Ano',
+  'register.plate': 'Placa',
+  'register.vin': 'Chassi',
+  'register.renavam': 'RENAVAM',
+  'register.proof': 'Comprovante de propriedade (CRLV-e)',
+  'register.proofHint': 'PDF ou foto. No protótipo o arquivo não sai do seu aparelho.',
+  'register.submit': 'Verificar e cadastrar',
+  'register.demoFill': 'Preencher com dados de exemplo',
+  'register.simulated': 'Protótipo: a propriedade é simulada. Conferimos o formato da placa, do chassi e o dígito do RENAVAM.',
+  'register.success.title': 'Anúncio verificado',
+  'register.success.body': 'Pronto. Quem colar este link no Verify It verá que o anúncio é seu.',
+  'register.success.otherSites': 'Este veículo também está verificado em: {sites}.',
+  'register.success.another': 'Cadastrar outro anúncio',
+  'register.rejected.title': 'Não foi possível verificar',
+  'error.invalidUrl': 'O link do anúncio é inválido.',
+  'error.invalidPlate': 'Placa inválida. Use o formato ABC1234 ou ABC1D23.',
+  'error.invalidVin': 'Chassi inválido. São 17 caracteres, sem as letras I, O e Q.',
+  'error.invalidRenavam': 'RENAVAM inválido. Confira os 11 dígitos.',
+  'error.missingVehicle': 'Informe a marca e o modelo.',
+  'error.invalidYear': 'Ano inválido.',
+  'error.missingProof': 'Envie o comprovante de propriedade.',
+  'error.urlAlreadyRegistered': 'Este link já está cadastrado (código {id}).',
+  'error.duplicateOnSite': 'Este veículo já tem um anúncio verificado em outro link do mesmo site ({site}). Para trocar de anúncio, marque o anterior como vendido ou removido.',
+  'error.dataMismatch': 'Placa, chassi e RENAVAM não batem com os dados já verificados para este veículo.',
+
+  'how.title': 'Como funciona',
+  'how.seller.title': '1. O dono cadastra o anúncio',
+  'how.seller.body': 'Ele informa o link, os dados do veículo e envia o documento. Pode cadastrar um anúncio por site: OLX, Facebook, Webmotors e outros.',
+  'how.check.title': '2. Conferimos os dados',
+  'how.check.body': 'Validamos os documentos e bloqueamos um segundo anúncio do mesmo veículo no mesmo site, que é o padrão do golpe do anúncio clonado.',
+  'how.buyer.title': '3. O comprador cola o link',
+  'how.buyer.body': 'Antes de negociar, ele cola aqui o link que está vendo. Se não for o link cadastrado pelo dono, avisamos.',
+  'how.noSeal.title': 'Por que não há selo nem QR code?',
+  'how.noSeal.body': 'Um golpista pode copiar a imagem de um selo para o anúncio falso. A confiança vem de o comprador consultar o Verify It por conta própria, não de algo mostrado no anúncio.',
+  'how.stats.title': 'Por que isso importa',
+  'how.stats.loss': 'em prejuízo com golpes',
+  'how.stats.victims': 'vítimas',
+  'how.stats.attempts': 'dos entrevistados já sofreram tentativa de golpe',
+  'how.stats.would': 'usariam uma plataforma de verificação',
+  'how.stats.source': 'Fontes: Veja Negócios (Pedro Gil) e pesquisa do Startup Weekend.',
+
+  'activity.title': 'Atividade',
+  'activity.listings': 'Anúncios verificados',
+  'activity.log': 'Histórico de interações',
+  'activity.empty': 'Nenhuma interação ainda.',
+  'activity.markSold': 'Marcar como vendido',
+  'activity.status.active': 'Ativo',
+  'activity.status.sold': 'Vendido',
+  'activity.reset': 'Restaurar dados de exemplo',
+  'activity.resetConfirm': 'Apagar tudo e voltar aos dados de exemplo?',
+  'activity.localNote': 'Protótipo: os dados ficam salvos neste navegador.',
+  'log.register': 'Cadastro',
+  'log.rejected': 'Cadastro recusado',
+  'log.check': 'Consulta',
+  'log.report': 'Denúncia',
+  'log.sold': 'Vendido',
+  'log.when': 'Quando',
+  'log.type': 'Tipo',
+  'log.site': 'Site',
+  'log.result': 'Resultado',
+  'status.verified': 'Verificado',
+  'status.scam': 'Possível golpe',
+  'status.unverified': 'Não verificado',
+  'status.invalid': 'Link inválido',
+
+  'footer.prototype': 'Protótipo do Verify It. Todos os anúncios de exemplo são fictícios.',
+}
+
+export type MessageKey = keyof typeof pt
+type Messages = Record<MessageKey, string>
+
+const en: Messages = {
+  'brand.tagline': 'Check whether a car listing is genuine before you deal.',
+  'nav.check': 'Check a listing',
+  'nav.register': 'Register a listing',
+  'login.title': 'Sign in to Verify It',
+  'login.lead': 'Choose how you want to use the platform.',
+  'login.email': 'Email',
+  'login.password': 'Password',
+  'login.seller': "I'm a seller",
+  'login.sellerDesc': "Register and protect your vehicle's listings.",
+  'login.buyer': "I'm a buyer",
+  'login.buyerDesc': 'Check whether a listing can be trusted before you deal.',
+  'login.simulated': 'Simulated sign-in: any email and password work, and the fields can be left blank.',
+  'header.role.seller': 'Seller',
+  'header.role.buyer': 'Buyer',
+  'header.logout': 'Sign out',
+  'nav.how': 'How it works',
+  'nav.activity': 'Activity',
+  'lang.label': 'Language',
+
+  'check.title': 'Can you trust this listing?',
+  'check.lead': "Paste the link of the listing you're looking at. We'll tell you whether the vehicle's owner verified it.",
+  'check.url': 'Listing link',
+  'check.urlPlaceholder': 'https://www.olx.com.br/autos-e-pecas/...',
+  'check.plate': 'Plate shown in the listing (optional)',
+  'check.plateHint': 'With the plate we can detect cloned listings.',
+  'check.submit': 'Check',
+  'check.examples': 'Try an example:',
+  'check.example.verified': 'Verified listing',
+  'check.example.cloned': 'Cloned listing',
+  'check.example.unknown': 'Unknown listing',
+
+  'result.verified.title': 'Verified listing',
+  'result.verified.body': "This vehicle's owner proved ownership and registered exactly this link.",
+  'result.scam.title': 'Possible scam',
+  'result.scam.body': "Don't negotiate or send any payment through this listing.",
+  'result.unverified.title': 'Listing not verified',
+  'result.unverified.body': "This link wasn't registered by the vehicle's owner. That doesn't prove it's a scam, but be extra careful.",
+  'result.invalid.title': 'Invalid link',
+  'result.invalid.body': 'Make sure you copied the full address of the listing.',
+  'reason.plateOnOtherUrl': 'This vehicle already has a verified listing at another link on the same site. This one looks like a copy.',
+  'reason.sold': 'The owner reported that this vehicle has already been sold.',
+  'reason.reported': 'Other buyers have reported this link {n} time(s).',
+  'reason.knownOnOtherSites': 'This vehicle has a verified listing on another site. Prefer dealing through the official link below.',
+  'reason.notFound': "We couldn't find any record of this link.",
+  'result.vehicle': 'Vehicle',
+  'result.plate': 'Plate',
+  'result.site': 'Site',
+  'result.verifiedOn': 'Verified on',
+  'result.checkId': 'Verification code',
+  'result.reportsWarning': 'Warning: this link has received {n} report(s).',
+  'result.related': 'Official links for this vehicle',
+  'result.openListing': 'Go to the original listing',
+  'result.report': 'Report this listing',
+  'result.reported': 'Report received. Thanks for helping other buyers.',
+  'result.tips.title': 'Before you pay',
+  'result.tips.1': 'See the car in person and check the plate and VIN.',
+  'result.tips.2': 'Never pay a deposit before seeing the vehicle.',
+  'result.tips.3': 'Be wary of prices far below the FIPE table.',
+
+  'register.title': 'Protect your listing',
+  'register.lead': "Register the link of each listing for your vehicle. Buyers paste the link here and know it's really yours.",
+  'register.url': 'Listing link',
+  'register.make': 'Make',
+  'register.model': 'Model',
+  'register.year': 'Year',
+  'register.plate': 'Plate',
+  'register.vin': 'VIN (chassis)',
+  'register.renavam': 'RENAVAM',
+  'register.proof': 'Proof of ownership (CRLV-e)',
+  'register.proofHint': "PDF or photo. In the prototype the file doesn't leave your device.",
+  'register.submit': 'Verify and register',
+  'register.demoFill': 'Fill in with sample data',
+  'register.simulated': 'Prototype: ownership is simulated. We check the plate and VIN format and the RENAVAM check digit.',
+  'register.success.title': 'Listing verified',
+  'register.success.body': 'Done. Anyone who pastes this link into Verify It will see the listing is yours.',
+  'register.success.otherSites': 'This vehicle is also verified on: {sites}.',
+  'register.success.another': 'Register another listing',
+  'register.rejected.title': "We couldn't verify it",
+  'error.invalidUrl': 'The listing link is invalid.',
+  'error.invalidPlate': 'Invalid plate. Use the format ABC1234 or ABC1D23.',
+  'error.invalidVin': 'Invalid VIN. It has 17 characters, without the letters I, O and Q.',
+  'error.invalidRenavam': 'Invalid RENAVAM. Check the 11 digits.',
+  'error.missingVehicle': 'Enter the make and model.',
+  'error.invalidYear': 'Invalid year.',
+  'error.missingProof': 'Upload the proof of ownership.',
+  'error.urlAlreadyRegistered': 'This link is already registered (code {id}).',
+  'error.duplicateOnSite': 'This vehicle already has a verified listing at another link on the same site ({site}). To switch listings, mark the previous one as sold or removed.',
+  'error.dataMismatch': "The plate, VIN and RENAVAM don't match the data already verified for this vehicle.",
+
+  'how.title': 'How it works',
+  'how.seller.title': '1. The owner registers the listing',
+  'how.seller.body': 'They enter the link and vehicle details and upload the document. One listing per site is allowed: OLX, Facebook, Webmotors and others.',
+  'how.check.title': '2. We check the data',
+  'how.check.body': 'We validate the documents and block a second listing of the same vehicle on the same site, which is the pattern of the cloned-listing scam.',
+  'how.buyer.title': '3. The buyer pastes the link',
+  'how.buyer.body': "Before dealing, they paste the link they're looking at. If it isn't the link the owner registered, we warn them.",
+  'how.noSeal.title': 'Why is there no badge or QR code?',
+  'how.noSeal.body': 'A scammer can copy a badge image into a fake listing. Trust comes from the buyer checking Verify It on their own, not from anything shown in the listing.',
+  'how.stats.title': 'Why this matters',
+  'how.stats.loss': 'lost to scams',
+  'how.stats.victims': 'victims',
+  'how.stats.attempts': 'of respondents have faced a scam attempt',
+  'how.stats.would': 'would use a verification platform',
+  'how.stats.source': 'Sources: Veja Negócios (Pedro Gil) and the Startup Weekend survey.',
+
+  'activity.title': 'Activity',
+  'activity.listings': 'Verified listings',
+  'activity.log': 'Interaction log',
+  'activity.empty': 'No interactions yet.',
+  'activity.markSold': 'Mark as sold',
+  'activity.status.active': 'Active',
+  'activity.status.sold': 'Sold',
+  'activity.reset': 'Restore sample data',
+  'activity.resetConfirm': 'Erase everything and go back to the sample data?',
+  'activity.localNote': 'Prototype: data is saved in this browser.',
+  'log.register': 'Registration',
+  'log.rejected': 'Registration rejected',
+  'log.check': 'Check',
+  'log.report': 'Report',
+  'log.sold': 'Sold',
+  'log.when': 'When',
+  'log.type': 'Type',
+  'log.site': 'Site',
+  'log.result': 'Result',
+  'status.verified': 'Verified',
+  'status.scam': 'Possible scam',
+  'status.unverified': 'Not verified',
+  'status.invalid': 'Invalid link',
+
+  'footer.prototype': 'Verify It prototype. All sample listings are fictitious.',
+}
+
+const de: Messages = {
+  'brand.tagline': 'Prüfen Sie, ob eine Autoanzeige echt ist, bevor Sie verhandeln.',
+  'nav.check': 'Anzeige prüfen',
+  'nav.register': 'Anzeige registrieren',
+  'login.title': 'Bei Verify It anmelden',
+  'login.lead': 'Wählen Sie, wie Sie die Plattform nutzen möchten.',
+  'login.email': 'E-Mail',
+  'login.password': 'Passwort',
+  'login.seller': 'Ich verkaufe',
+  'login.sellerDesc': 'Registrieren und schützen Sie die Anzeigen Ihres Fahrzeugs.',
+  'login.buyer': 'Ich kaufe',
+  'login.buyerDesc': 'Prüfen Sie vor der Verhandlung, ob eine Anzeige vertrauenswürdig ist.',
+  'login.simulated': 'Simulierte Anmeldung: Jede E-Mail und jedes Passwort funktioniert, die Felder können auch leer bleiben.',
+  'header.role.seller': 'Verkäufer',
+  'header.role.buyer': 'Käufer',
+  'header.logout': 'Abmelden',
+  'nav.how': 'So funktioniert es',
+  'nav.activity': 'Aktivität',
+  'lang.label': 'Sprache',
+
+  'check.title': 'Ist diese Anzeige vertrauenswürdig?',
+  'check.lead': 'Fügen Sie den Link der Anzeige ein, die Sie sich ansehen. Wir sagen Ihnen, ob der Fahrzeughalter sie verifiziert hat.',
+  'check.url': 'Link der Anzeige',
+  'check.urlPlaceholder': 'https://www.olx.com.br/autos-e-pecas/...',
+  'check.plate': 'Kennzeichen aus der Anzeige (optional)',
+  'check.plateHint': 'Mit dem Kennzeichen erkennen wir kopierte Anzeigen.',
+  'check.submit': 'Prüfen',
+  'check.examples': 'Probieren Sie ein Beispiel:',
+  'check.example.verified': 'Verifizierte Anzeige',
+  'check.example.cloned': 'Kopierte Anzeige',
+  'check.example.unknown': 'Unbekannte Anzeige',
+
+  'result.verified.title': 'Verifizierte Anzeige',
+  'result.verified.body': 'Der Halter dieses Fahrzeugs hat sein Eigentum nachgewiesen und genau diesen Link registriert.',
+  'result.scam.title': 'Möglicher Betrug',
+  'result.scam.body': 'Verhandeln Sie nicht und leisten Sie keine Zahlungen über diese Anzeige.',
+  'result.unverified.title': 'Anzeige nicht verifiziert',
+  'result.unverified.body': 'Dieser Link wurde nicht vom Fahrzeughalter registriert. Das beweist keinen Betrug, aber seien Sie besonders vorsichtig.',
+  'result.invalid.title': 'Ungültiger Link',
+  'result.invalid.body': 'Prüfen Sie, ob Sie die vollständige Adresse der Anzeige kopiert haben.',
+  'reason.plateOnOtherUrl': 'Für dieses Fahrzeug gibt es bereits eine verifizierte Anzeige unter einem anderen Link derselben Website. Diese hier scheint eine Kopie zu sein.',
+  'reason.sold': 'Der Halter hat gemeldet, dass dieses Fahrzeug bereits verkauft wurde.',
+  'reason.reported': 'Andere Käufer haben diesen Link {n}-mal gemeldet.',
+  'reason.knownOnOtherSites': 'Für dieses Fahrzeug gibt es eine verifizierte Anzeige auf einer anderen Website. Verhandeln Sie lieber über den offiziellen Link unten.',
+  'reason.notFound': 'Zu diesem Link haben wir keinen Eintrag gefunden.',
+  'result.vehicle': 'Fahrzeug',
+  'result.plate': 'Kennzeichen',
+  'result.site': 'Website',
+  'result.verifiedOn': 'Verifiziert am',
+  'result.checkId': 'Prüfcode',
+  'result.reportsWarning': 'Achtung: Dieser Link wurde {n}-mal gemeldet.',
+  'result.related': 'Offizielle Links zu diesem Fahrzeug',
+  'result.openListing': 'Zur Originalanzeige',
+  'result.report': 'Diese Anzeige melden',
+  'result.reported': 'Meldung erhalten. Danke, dass Sie anderen Käufern helfen.',
+  'result.tips.title': 'Bevor Sie zahlen',
+  'result.tips.1': 'Sehen Sie sich das Auto persönlich an und prüfen Sie Kennzeichen und Fahrgestellnummer.',
+  'result.tips.2': 'Leisten Sie niemals eine Anzahlung, bevor Sie das Fahrzeug gesehen haben.',
+  'result.tips.3': 'Seien Sie misstrauisch bei Preisen weit unter der FIPE-Tabelle.',
+
+  'register.title': 'Schützen Sie Ihre Anzeige',
+  'register.lead': 'Registrieren Sie den Link jeder Anzeige Ihres Fahrzeugs. Käufer fügen den Link hier ein und wissen, dass er wirklich von Ihnen ist.',
+  'register.url': 'Link der Anzeige',
+  'register.make': 'Marke',
+  'register.model': 'Modell',
+  'register.year': 'Baujahr',
+  'register.plate': 'Kennzeichen',
+  'register.vin': 'Fahrgestellnummer (FIN)',
+  'register.renavam': 'RENAVAM',
+  'register.proof': 'Eigentumsnachweis (CRLV-e)',
+  'register.proofHint': 'PDF oder Foto. Im Prototyp verlässt die Datei Ihr Gerät nicht.',
+  'register.submit': 'Prüfen und registrieren',
+  'register.demoFill': 'Mit Beispieldaten ausfüllen',
+  'register.simulated': 'Prototyp: Der Eigentumsnachweis ist simuliert. Wir prüfen das Format von Kennzeichen und FIN sowie die Prüfziffer der RENAVAM.',
+  'register.success.title': 'Anzeige verifiziert',
+  'register.success.body': 'Fertig. Wer diesen Link bei Verify It einfügt, sieht, dass die Anzeige von Ihnen ist.',
+  'register.success.otherSites': 'Dieses Fahrzeug ist auch verifiziert auf: {sites}.',
+  'register.success.another': 'Weitere Anzeige registrieren',
+  'register.rejected.title': 'Verifizierung nicht möglich',
+  'error.invalidUrl': 'Der Link der Anzeige ist ungültig.',
+  'error.invalidPlate': 'Ungültiges Kennzeichen. Verwenden Sie das Format ABC1234 oder ABC1D23.',
+  'error.invalidVin': 'Ungültige FIN. Sie hat 17 Zeichen, ohne die Buchstaben I, O und Q.',
+  'error.invalidRenavam': 'Ungültige RENAVAM. Prüfen Sie die 11 Ziffern.',
+  'error.missingVehicle': 'Geben Sie Marke und Modell an.',
+  'error.invalidYear': 'Ungültiges Baujahr.',
+  'error.missingProof': 'Laden Sie den Eigentumsnachweis hoch.',
+  'error.urlAlreadyRegistered': 'Dieser Link ist bereits registriert (Code {id}).',
+  'error.duplicateOnSite': 'Für dieses Fahrzeug gibt es bereits eine verifizierte Anzeige unter einem anderen Link derselben Website ({site}). Um die Anzeige zu wechseln, markieren Sie die vorherige als verkauft oder entfernt.',
+  'error.dataMismatch': 'Kennzeichen, FIN und RENAVAM stimmen nicht mit den bereits verifizierten Daten dieses Fahrzeugs überein.',
+
+  'how.title': 'So funktioniert es',
+  'how.seller.title': '1. Der Halter registriert die Anzeige',
+  'how.seller.body': 'Er gibt den Link und die Fahrzeugdaten an und lädt das Dokument hoch. Pro Website ist eine Anzeige erlaubt: OLX, Facebook, Webmotors und andere.',
+  'how.check.title': '2. Wir prüfen die Daten',
+  'how.check.body': 'Wir prüfen die Dokumente und sperren eine zweite Anzeige desselben Fahrzeugs auf derselben Website, das typische Muster des Betrugs mit kopierten Anzeigen.',
+  'how.buyer.title': '3. Der Käufer fügt den Link ein',
+  'how.buyer.body': 'Vor der Verhandlung fügt er hier den Link ein, den er sieht. Ist es nicht der vom Halter registrierte Link, warnen wir ihn.',
+  'how.noSeal.title': 'Warum gibt es kein Siegel und keinen QR-Code?',
+  'how.noSeal.body': 'Ein Betrüger kann ein Siegelbild in eine gefälschte Anzeige kopieren. Vertrauen entsteht dadurch, dass der Käufer selbst bei Verify It nachsieht, nicht durch etwas, das in der Anzeige steht.',
+  'how.stats.title': 'Warum das wichtig ist',
+  'how.stats.loss': 'Schaden durch Betrug',
+  'how.stats.victims': 'Opfer',
+  'how.stats.attempts': 'der Befragten haben schon einen Betrugsversuch erlebt',
+  'how.stats.would': 'würden eine Prüfplattform nutzen',
+  'how.stats.source': 'Quellen: Veja Negócios (Pedro Gil) und die Umfrage des Startup Weekend.',
+
+  'activity.title': 'Aktivität',
+  'activity.listings': 'Verifizierte Anzeigen',
+  'activity.log': 'Interaktionsverlauf',
+  'activity.empty': 'Noch keine Interaktionen.',
+  'activity.markSold': 'Als verkauft markieren',
+  'activity.status.active': 'Aktiv',
+  'activity.status.sold': 'Verkauft',
+  'activity.reset': 'Beispieldaten wiederherstellen',
+  'activity.resetConfirm': 'Alles löschen und zu den Beispieldaten zurückkehren?',
+  'activity.localNote': 'Prototyp: Die Daten werden in diesem Browser gespeichert.',
+  'log.register': 'Registrierung',
+  'log.rejected': 'Registrierung abgelehnt',
+  'log.check': 'Prüfung',
+  'log.report': 'Meldung',
+  'log.sold': 'Verkauft',
+  'log.when': 'Wann',
+  'log.type': 'Art',
+  'log.site': 'Website',
+  'log.result': 'Ergebnis',
+  'status.verified': 'Verifiziert',
+  'status.scam': 'Möglicher Betrug',
+  'status.unverified': 'Nicht verifiziert',
+  'status.invalid': 'Ungültiger Link',
+
+  'footer.prototype': 'Prototyp von Verify It. Alle Beispielanzeigen sind fiktiv.',
+}
+
+export const MESSAGES: Record<Lang, Messages> = { pt, en, de }
+
+const LANG_KEY = 'verify-it:lang'
+
+function initialLang(): Lang {
+  try {
+    const saved = localStorage.getItem(LANG_KEY)
+    if (saved === 'pt' || saved === 'en' || saved === 'de') return saved
+  } catch {
+    // ignora: usa o idioma do navegador
+  }
+  const nav = (typeof navigator !== 'undefined' ? navigator.language : 'pt').slice(0, 2)
+  return nav === 'en' || nav === 'de' ? nav : 'pt'
+}
+
+export function translate(lang: Lang, key: MessageKey, vars?: Record<string, string | number>): string {
+  const text = MESSAGES[lang][key] ?? MESSAGES.pt[key]
+  return vars ? text.replace(/\{(\w+)\}/g, (_, name: string) => String(vars[name] ?? '')) : text
+}
+
+interface I18nValue {
+  lang: Lang
+  locale: string
+  setLang: (lang: Lang) => void
+  t: (key: MessageKey, vars?: Record<string, string | number>) => string
+}
+
+const I18nContext = createContext<I18nValue | null>(null)
+
+export function I18nProvider({ children }: { children: ReactNode }) {
+  const [lang, setLangState] = useState<Lang>(initialLang)
+  const info = LANGUAGES.find((l) => l.code === lang)!
+
+  useEffect(() => {
+    document.documentElement.lang = info.htmlLang
+  }, [info])
+
+  const setLang = useCallback((next: Lang) => {
+    setLangState(next)
+    try {
+      localStorage.setItem(LANG_KEY, next)
+    } catch {
+      // sem armazenamento: o idioma vale só nesta visita
+    }
+  }, [])
+
+  const value = useMemo<I18nValue>(
+    () => ({ lang, locale: info.locale, setLang, t: (key, vars) => translate(lang, key, vars) }),
+    [lang, info, setLang],
+  )
+  return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>
+}
+
+export function useI18n(): I18nValue {
+  const value = useContext(I18nContext)
+  if (!value) throw new Error('useI18n precisa estar dentro de <I18nProvider>')
+  return value
+}
