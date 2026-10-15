@@ -47,7 +47,7 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-weight:
 .app { min-height: 100vh; display: flex; flex-direction: column; }
 
 .header { background: var(--surface); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 1; }
-.header-inner, .nav, .main, .footer { max-width: 760px; margin: 0 auto; padding-left: 16px; padding-right: 16px; width: 100%; }
+.header-inner, .main, .footer { max-width: 760px; margin: 0 auto; padding-left: 16px; padding-right: 16px; width: 100%; }
 .header-inner { display: flex; align-items: center; justify-content: space-between; padding-top: 12px; padding-bottom: 8px; }
 .brand { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 1.2rem; color: var(--text); text-decoration: none; }
 .brand svg { width: 28px; height: 28px; }
@@ -58,7 +58,19 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-weight:
 .lang-switch button { border: 0; background: transparent; color: var(--muted); padding: 6px 12px; font-weight: 600; cursor: pointer; }
 .lang-switch button.active { background: var(--brand); color: var(--surface); }
 
-.nav { display: flex; gap: 4px; overflow-x: auto; padding-bottom: 0; }
+.header-actions { display: flex; align-items: center; gap: 12px; }
+.nav { max-width: 760px; margin: 0 auto; padding: 0 16px; display: flex; gap: 4px; overflow-x: auto; }
+.session { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; }
+@media (max-width: 420px) { .role-badge { display: none; } }
+.role-badge { background: var(--bg); border: 1px solid var(--border); border-radius: 999px; padding: 2px 10px; color: var(--muted); font-weight: 600; }
+.login { max-width: 520px; margin: 0 auto; }
+.role-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 480px) { .role-buttons { grid-template-columns: 1fr; } }
+.role-button { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; text-align: left; padding: 16px; background: var(--bg); color: var(--text); border: 2px solid var(--border); border-radius: var(--radius); }
+.role-button:hover, .role-button:focus-visible { border-color: var(--brand); }
+.role-button strong { font-size: 1.05rem; color: var(--brand); }
+.role-button small { color: var(--muted); font-weight: 400; }
+.role-emoji { font-size: 1.5rem; }
 .nav a { padding: 10px 12px; text-decoration: none; color: var(--muted); border-bottom: 2px solid transparent; white-space: nowrap; font-weight: 500; }
 .nav a.active { color: var(--brand); border-bottom-color: var(--brand); }
 

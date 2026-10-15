@@ -10,6 +10,8 @@ Golpes com anúncios de veículos causaram R$ 2,7 bilhões de prejuízo a 91 mil
 
 ## Como funciona
 
+Ao abrir o site, a pessoa passa por um login simulado e escolhe **Sou vendedor** ou **Sou comprador**. Cada perfil vê só as telas que usa.
+
 1. **O dono cadastra o anúncio.** Informa o link, a placa, o chassi, o RENAVAM e envia o comprovante de propriedade (CRLV-e). Pode cadastrar um anúncio por site (OLX, Facebook, Webmotors...).
 2. **A plataforma verifica.** Confere os documentos e recusa um segundo anúncio do mesmo veículo no mesmo site.
 3. **O comprador cola o link** do anúncio que está vendo e recebe uma das respostas:
