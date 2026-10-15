@@ -211,7 +211,6 @@ input[type='file']::file-selector-button { margin-right: 0.8rem; padding: 0.35re
 .chart { margin: 2.5rem 0 0; padding: 1.25rem 1.25rem 1rem; background: var(--sheet); border: 1px solid var(--rule); }
 .chart h3 { font-size: 1.1rem; }
 .chart-note { margin-top: 0.75rem; color: var(--ink-2); font-size: 0.9rem; }
-.live-note { margin-top: 1rem; max-width: 42rem; }
 
 .bars { margin: 1rem 0 0; padding: 0; list-style: none; display: grid; gap: 0.5rem; }
 .bars li { position: relative; display: grid; grid-template-columns: minmax(8rem, 15rem) 1fr 3.5rem; align-items: center; gap: 0.75rem; font-size: 1rem; }

@@ -88,7 +88,6 @@ export function HowPage() {
         <Bars rows={KINDS.map(([k, v]) => [t(k), v])} max={100} format={(v) => pct(v / 100)} describe={(v) => pct(v / 100)} />
         <p className="chart-note">{t('how.kind.note')} <SourceLink source={SOURCES.olx2023kinds} /></p>
       </figure>
-      <p className="muted small live-note">{t('how.stats.live')}</p>
 
       <h2 className="section-title">{t('how.survey.title')}</h2>
       <p className="muted">{t('how.survey.lead', { n: SURVEY_TOTAL })}</p>
