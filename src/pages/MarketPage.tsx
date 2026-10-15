@@ -1,4 +1,6 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { gsap } from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { VehicleImage } from '../components/VehicleImage'
 import { useI18n } from '../i18n'
 import { describe, mockDetails, siteTheme, type MockDetails } from '../lib/mockListing'
@@ -6,6 +8,8 @@ import { CITIES, distanceKm, findCity } from '../lib/places'
 import { photoFor, vehicleKind, type VehicleKind, type VehiclePhoto } from '../lib/photos'
 import type { AppState, Listing } from '../lib/verify'
 import '../market.css'
+
+gsap.registerPlugin(ScrollTrigger)
 
 interface Vehicle {
   listing: Listing
@@ -44,6 +48,7 @@ export function MarketPage({ state }: { state: AppState }) {
   const [city, setCity] = useState('')
   const [radius, setRadius] = useState(50)
   const [sort, setSort] = useState<Sort>('new')
+  const gridRef = useRef<HTMLUListElement>(null)
 
   const all = useMemo(() => vehicles(state), [state])
   const cities = useMemo(() => [...new Set([...Object.keys(CITIES), ...all.map((v) => v.details.city)])].sort((a, b) => a.localeCompare(b, locale)), [all, locale])
@@ -68,6 +73,26 @@ export function MarketPage({ state }: { state: AppState }) {
     }
     return list.sort(order[sort])
   }, [all, query, kind, place, radius, sort])
+
+  // Os cards surgem conforme a pessoa rola a página; reage à lista filtrada.
+  useEffect(() => {
+    const grid = gridRef.current
+    if (!grid) return
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+
+    const cards = gsap.utils.toArray<HTMLElement>(grid.querySelectorAll('.car-card'))
+    if (cards.length === 0) return
+
+    const ctx = gsap.context(() => {
+      gsap.set(cards, { opacity: 0, y: 28 })
+      ScrollTrigger.batch(cards, {
+        start: 'top 90%',
+        onEnter: (batch) =>
+          gsap.to(batch, { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out', stagger: 0.08, overwrite: true }),
+      })
+    }, grid)
+    return () => ctx.revert()
+  }, [shown])
 
   const credits = useMemo(() => [...new Map(all.flatMap((v) => (v.photo ? [[v.photo.file, v.photo] as const] : []))).values()], [all])
   const filtered = query !== '' || kind !== '' || city !== ''
@@ -129,7 +154,7 @@ export function MarketPage({ state }: { state: AppState }) {
       {shown.length === 0 ? (
         <p className="market-empty">{t('mk.empty')}</p>
       ) : (
-        <ul className="market-grid">
+        <ul className="market-grid" ref={gridRef}>
           {shown.map(({ listing: l, details: d, photo }) => (
             <li key={l.plate} className="car-card">
               <a className="car-photo" href={`#/market/${l.checkId}`} tabIndex={-1} aria-hidden="true">
