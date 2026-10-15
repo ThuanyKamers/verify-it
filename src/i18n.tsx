@@ -206,8 +206,6 @@ const pt = {
   'cl.home': 'Início',
   'cl.category': 'Carros',
   'cl.soldBanner': 'Este veículo foi vendido.',
-  'cl.safety': 'Dica de segurança',
-  'cl.safetyBody': 'Nunca pague adiantado e combine o encontro em local público. Confira o link no Verify It antes de negociar.',
   'mp.close': 'Fechar e voltar ao Verify It',
   'mp.more': 'Mais opções',
   'mp.colors': 'Cor externa: {ext} · Cor interna: {int}',
@@ -217,6 +215,7 @@ const pt = {
   'mp.transLine.manual': 'Câmbio manual',
   'mp.sellerDetails': 'Detalhes do vendedor',
   'mp.joined': 'Entrou no Facebook em {year}',
+  'result.thisListing': 'este anúncio',
   'footer.prototype': 'Protótipo do Verify It. Todos os anúncios de exemplo são fictícios.',
 }
 
@@ -421,8 +420,6 @@ const en: Messages = {
   'cl.home': 'Home',
   'cl.category': 'Cars',
   'cl.soldBanner': 'This vehicle has been sold.',
-  'cl.safety': 'Safety tip',
-  'cl.safetyBody': 'Never pay in advance and meet in a public place. Check the link on Verify It before you negotiate.',
   'mp.close': 'Close and go back to Verify It',
   'mp.more': 'More options',
   'mp.colors': 'Exterior color: {ext} · Interior color: {int}',
@@ -432,6 +429,7 @@ const en: Messages = {
   'mp.transLine.manual': 'Manual transmission',
   'mp.sellerDetails': 'Seller details',
   'mp.joined': 'Joined Facebook in {year}',
+  'result.thisListing': 'this listing',
   'footer.prototype': 'Verify It prototype. All sample listings are fictitious.',
 }
 
@@ -633,8 +631,6 @@ const de: Messages = {
   'cl.home': 'Start',
   'cl.category': 'Autos',
   'cl.soldBanner': 'Dieses Fahrzeug wurde verkauft.',
-  'cl.safety': 'Sicherheitstipp',
-  'cl.safetyBody': 'Zahlen Sie nie im Voraus und treffen Sie sich an einem öffentlichen Ort. Prüfen Sie den Link vor dem Verhandeln bei Verify It.',
   'mp.close': 'Schließen und zurück zu Verify It',
   'mp.more': 'Weitere Optionen',
   'mp.colors': 'Außenfarbe: {ext} · Innenfarbe: {int}',
@@ -644,6 +640,7 @@ const de: Messages = {
   'mp.transLine.manual': 'Schaltgetriebe',
   'mp.sellerDetails': 'Verkäuferdetails',
   'mp.joined': 'Seit {year} auf Facebook',
+  'result.thisListing': 'diese Anzeige',
   'footer.prototype': 'Prototyp von Verify It. Alle Beispielanzeigen sind fiktiv.',
 }
 

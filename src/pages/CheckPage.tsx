@@ -52,6 +52,8 @@ export function CheckPage({ state, update }: Props) {
 
   const date = (iso: string) => new Date(iso).toLocaleDateString(locale)
   const risky = result && result.status !== 'verified' && result.status !== 'invalid'
+  // Todos os anúncios verificados do veículo, incluindo o que está sendo consultado.
+  const official = !result ? [] : result.status === 'verified' && result.listing ? [result.listing, ...result.related] : result.related
 
   return (
     <section className="page">
@@ -106,13 +108,14 @@ export function CheckPage({ state, update }: Props) {
             </>
           )}
 
-          {result.related.length > 0 && (
+          {official.length > 0 && (
             <div className="report-part">
               <h3>{t('result.related')}</h3>
               <ul className="plain-list">
-                {result.related.map((l) => (
+                {official.map((l) => (
                   <li key={l.checkId}>
                     <a href={listingHref(l)} target="_blank" rel="noopener noreferrer">{l.site}</a>, {l.make} {l.model} {l.year}
+                    {l.checkId === result.listing?.checkId && result.status === 'verified' && <> ({t('result.thisListing')})</>}
                   </li>
                 ))}
               </ul>

@@ -31,7 +31,6 @@
 .cl-specs dt { color: #777; font-size: 0.8125rem; }
 .cl-specs dd { margin: 0; font-weight: 600; }
 .cl .mp-features { grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr)); }
-.cl-tip { background: #fff8e1; }
 @media (max-width: 52rem) {
   .cl-grid { grid-template-columns: 1fr; }
   .cl-search { display: none; }
