@@ -2,7 +2,7 @@
 // Todos os anúncios, placas e documentos são fictícios.
 
 import { renavamCheckDigit } from './validation'
-import type { AppState, Listing, ListingAd } from './verify'
+import type { AppState, DocumentFiles, Listing, ListingAd } from './verify'
 
 function renavam(base: string): string {
   return base + renavamCheckDigit(base)
@@ -33,8 +33,17 @@ const ads: Record<string, ListingAd> = {
   cb650: { price: 7450, km: 9800, city: 'Düsseldorf', seller: 'Sarah P.', memberSince: 2021, owners: 1, bodyColor: '#1b1c1f', exterior: 'color.black', interior: 'color.black', transmission: 'mp.trans.manual', fuel: 'mp.fuel.petrol', features: ['mp.feat.abs', 'mp.feat.led'], descriptionText: 'Honda CB650R Neo Sports Café, one owner and low mileage. Four-cylinder sound, slipper clutch and LED lights. Always serviced at Honda, winter stored indoors.' },
 }
 
+/** Os mesmos arquivos fictícios para todos os anúncios de exemplo. */
+export const DEMO_DOCUMENTS: DocumentFiles = {
+  idFront: 'id-front.jpg',
+  idBack: 'id-back.jpg',
+  selfie: 'selfie-with-id.jpg',
+  registration: 'registration-part-1.pdf',
+  title: 'registration-part-2.pdf',
+}
+
 function listing(checkId: string, url: string, key: string, site: string, vehicle: typeof civic, createdAt: string, status: Listing['status'] = 'active', ad?: ListingAd): Listing {
-  return { checkId, url, key, site, ...vehicle, proofFileName: 'crlv-e.pdf', createdAt, status, ...(ad ? { ad } : {}) }
+  return { checkId, url, key, site, ...vehicle, documents: DEMO_DOCUMENTS, createdAt, status, ...(ad ? { ad } : {}) }
 }
 
 export const DEMO_URLS = {

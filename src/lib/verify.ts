@@ -39,7 +39,8 @@ export interface Listing {
   make: string
   model: string
   year: number
-  proofFileName: string
+  /** Arquivos enviados no cadastro (no protótipo, só os nomes). */
+  documents: DocumentFiles
   createdAt: string
   status: 'active' | 'sold'
   ad?: ListingAd
@@ -69,6 +70,17 @@ export interface AppState {
   log: LogEntry[]
 }
 
+/** Documentos que o vendedor envia para provar identidade e propriedade. */
+export const DOCUMENTS = ['idFront', 'idBack', 'selfie', 'registration', 'title', 'inspection'] as const
+export type DocumentKind = (typeof DOCUMENTS)[number]
+/** O laudo de inspeção (TÜV/HU) é opcional; os demais são obrigatórios. */
+export const OPTIONAL_DOCUMENTS: readonly DocumentKind[] = ['inspection']
+export type DocumentFiles = Partial<Record<DocumentKind, string>>
+
+export function missingDocuments(files: DocumentFiles): DocumentKind[] {
+  return DOCUMENTS.filter((d) => !OPTIONAL_DOCUMENTS.includes(d) && !files[d]?.trim())
+}
+
 export interface RegisterInput {
   url: string
   plate: string
@@ -77,7 +89,8 @@ export interface RegisterInput {
   make: string
   model: string
   year: string
-  proofFileName: string
+  /** Nome do arquivo enviado para cada documento. */
+  documents: DocumentFiles
   /** Opcionais: dados para o marketplace do Verify It. */
   price?: string
   km?: string
@@ -92,14 +105,14 @@ export type RegisterError =
   | 'invalidRenavam'
   | 'missingVehicle'
   | 'invalidYear'
-  | 'missingProof'
+  | 'missingDocuments'
   | 'urlAlreadyRegistered'
   | 'duplicateOnSite'
   | 'dataMismatch'
 
 export type RegisterResult =
   | { ok: true; listing: Listing; otherSites: Listing[] }
-  | { ok: false; errors: RegisterError[]; conflict?: Listing }
+  | { ok: false; errors: RegisterError[]; conflict?: Listing; missing?: DocumentKind[] }
 
 export type CheckStatus = 'verified' | 'scam' | 'unverified' | 'invalid'
 
@@ -154,8 +167,9 @@ export function register(
   if (!input.make.trim() || !input.model.trim()) errors.push('missingVehicle')
   const year = Number(input.year)
   if (!Number.isInteger(year) || year < 1950 || year > now.getFullYear() + 1) errors.push('invalidYear')
-  if (!input.proofFileName.trim()) errors.push('missingProof')
-  if (errors.length || !parsed) return { ok: false, errors }
+  const missing = missingDocuments(input.documents)
+  if (missing.length) errors.push('missingDocuments')
+  if (errors.length || !parsed) return { ok: false, errors, ...(missing.length ? { missing } : {}) }
 
   const vehicle = { plate: plate ?? '', vin: clean(input.vin), renavam: normalizeRenavam(input.renavam) }
   const active = state.listings.filter((l) => l.status === 'active')
@@ -183,7 +197,7 @@ export function register(
     make: input.make.trim(),
     model: input.model.trim(),
     year,
-    proofFileName: input.proofFileName.trim(),
+    documents: Object.fromEntries(Object.entries(input.documents).filter(([, name]) => name?.trim())) as DocumentFiles,
     createdAt: now.toISOString(),
     status: 'active',
     ad: buildAd(input),

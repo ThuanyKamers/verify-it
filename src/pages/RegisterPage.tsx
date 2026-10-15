@@ -4,11 +4,12 @@ import { PlateInput } from '../components/PlateInput'
 import { useI18n, type MessageKey } from '../i18n'
 import type { useAppState } from '../lib/store'
 import { renavamCheckDigit } from '../lib/validation'
-import { appendLog, register, type Listing, type RegisterInput, type RegisterResult } from '../lib/verify'
+import { DEMO_DOCUMENTS } from '../lib/seed'
+import { appendLog, DOCUMENTS, missingDocuments, OPTIONAL_DOCUMENTS, register, type DocumentKind, type Listing, type RegisterInput, type RegisterResult } from '../lib/verify'
 
 type Props = ReturnType<typeof useAppState>
 
-const EMPTY: RegisterInput = { url: '', plate: '', vin: '', renavam: '', make: '', model: '', year: '', proofFileName: '' }
+const EMPTY: RegisterInput = { url: '', plate: '', vin: '', renavam: '', make: '', model: '', year: '', documents: {} }
 
 /** Dados de exemplo: o mesmo Civic da demonstração, agora anunciado no Kleinanzeigen. */
 const DEMO: RegisterInput = {
@@ -19,7 +20,7 @@ const DEMO: RegisterInput = {
   make: 'Honda',
   model: 'Civic EXL',
   year: '2019',
-  proofFileName: 'crlv-e-exemplo.pdf',
+  documents: DEMO_DOCUMENTS,
   price: '21900',
   km: '62400',
   city: 'Berlin',
@@ -31,7 +32,10 @@ export function RegisterPage({ state, update }: Props) {
   const [form, setForm] = useState<RegisterInput>(EMPTY)
   const [result, setResult] = useState<RegisterResult | null>(null)
 
-  const set = (field: keyof RegisterInput) => (value: string) => setForm((f) => ({ ...f, [field]: value }))
+  const set = (field: Exclude<keyof RegisterInput, 'documents'>) => (value: string) => setForm((f) => ({ ...f, [field]: value }))
+  const setDocument = (kind: DocumentKind, name: string) => setForm((f) => ({ ...f, documents: { ...f.documents, [kind]: name } }))
+  const required = DOCUMENTS.filter((d) => !OPTIONAL_DOCUMENTS.includes(d))
+  const uploaded = required.length - missingDocuments(form.documents).length
 
   function onSubmit(e: FormEvent) {
     e.preventDefault()
@@ -82,7 +86,11 @@ export function RegisterPage({ state, update }: Props) {
           <h2>{t('register.rejected.title')}</h2>
           <ul className="reasons">
             {result.errors.map((err) => (
-              <li key={err}>{errorText(t, err, result.conflict)}</li>
+              <li key={err}>
+                {err === 'missingDocuments'
+                  ? t('error.missingDocuments', { docs: (result.missing ?? []).map((d) => t(`doc.${d}`)).join(', ') })
+                  : errorText(t, err, result.conflict)}
+              </li>
             ))}
           </ul>
         </div>
@@ -137,11 +145,41 @@ export function RegisterPage({ state, update }: Props) {
           <textarea rows={3} value={form.description ?? ''} onChange={(e) => set('description')(e.target.value)} />
           <small>{t('register.adHint')}</small>
         </label>
-        <label className="field">
-          {t('register.proof')}
-          <input type="file" accept="application/pdf,image/*" onChange={(e) => set('proofFileName')(e.target.files?.[0]?.name ?? '')} />
-          <small>{form.proofFileName || t('register.proofHint')}</small>
-        </label>
+        <fieldset className="docs">
+          <legend>{t('register.docs.title')}</legend>
+          <p className="docs-lead">{t('register.docs.lead')}</p>
+          <p className="docs-progress" aria-live="polite">
+            <progress max={required.length} value={uploaded} />
+            {t('register.docs.progress', { n: uploaded, total: required.length })}
+          </p>
+          <ul className="docs-list">
+            {DOCUMENTS.map((kind) => {
+              const file = form.documents[kind]
+              const optional = OPTIONAL_DOCUMENTS.includes(kind)
+              return (
+                <li key={kind} className={file ? 'doc doc-done' : 'doc'}>
+                  <span className="doc-mark" aria-hidden="true">{file ? '✓' : ''}</span>
+                  <div className="doc-text">
+                    <strong>{t(`doc.${kind}`)}{optional && <span className="doc-optional"> · {t('register.docs.optional')}</span>}</strong>
+                    <small>{file ?? t(`doc.${kind}.hint`)}</small>
+                  </div>
+                  <label className="button button-quiet doc-upload">
+                    {file ? t('register.docs.replace') : t('register.docs.choose')}
+                    <span className="visually-hidden">: {t(`doc.${kind}`)}</span>
+                    <input
+                      type="file"
+                      className="visually-hidden"
+                      accept={kind === 'selfie' ? 'image/*' : 'application/pdf,image/*'}
+                      capture={kind === 'selfie' ? 'user' : undefined}
+                      onChange={(e) => setDocument(kind, e.target.files?.[0]?.name ?? '')}
+                    />
+                  </label>
+                </li>
+              )
+            })}
+          </ul>
+          <small className="docs-hint">{t('register.docs.hint')}</small>
+        </fieldset>
         <p className="muted small">{t('register.simulated')}</p>
         <div className="actions">
           <button className="button button-primary" type="submit">{t('register.submit')}</button>
