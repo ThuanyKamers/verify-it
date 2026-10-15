@@ -1,0 +1,39 @@
+/* Cópias de sites de classificados: a cor da marca muda por site, o resto é comum. */
+.cl { --cl-head: #fff; --cl-head-text: #6e0ad6; --cl-accent: #f28000; --cl-accent-text: #fff; --cl-link: #6e0ad6; background: #f4f4f4; }
+.cl[data-site='olx'] { --cl-head: #fff; --cl-head-text: #6e0ad6; --cl-accent: #f28000; --cl-link: #6e0ad6; }
+.cl[data-site='webmotors'] { --cl-head: #e4002b; --cl-head-text: #fff; --cl-accent: #e4002b; --cl-link: #c20023; }
+.cl[data-site='mercadolivre'] { --cl-head: #ffe600; --cl-head-text: #2d3277; --cl-accent: #3483fa; --cl-link: #3483fa; }
+.cl[data-site='generic'] { --cl-head: #14203b; --cl-head-text: #fff; --cl-accent: #17348c; --cl-link: #17348c; }
+.cl a { color: var(--cl-link); }
+.cl-top { background: var(--cl-head); box-shadow: 0 1px 0 rgba(0,0,0,0.12); }
+.cl-top-inner { display: flex; align-items: center; gap: 1.5rem; max-width: 72rem; margin: 0 auto; padding: 0.75rem 1rem; }
+.cl-brand { color: var(--cl-head-text); font: 800 1.6rem/1 system-ui, sans-serif; letter-spacing: -0.02em; white-space: nowrap; }
+.cl-search { flex: 1; max-width: 32rem; padding: 0.55rem 0.9rem; border-radius: 6px; background: #fff; color: #888; font-size: 0.9rem; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.12); }
+.cl-main { max-width: 72rem; margin: 0 auto; padding: 0.5rem 1rem 3rem; }
+.cl-crumb { margin: 0.5rem 0; color: #777; font-size: 0.8125rem; }
+.cl-sold { margin: 0 0 0.75rem; padding: 0.6rem 0.9rem; border-radius: 6px; background: #fde8e8; color: #a11d1d; font-weight: 600; }
+.cl-grid { display: grid; grid-template-columns: minmax(0, 1fr) 21rem; gap: 1rem; align-items: start; }
+.cl .mp-gallery { padding: 0; background: #fff; border-radius: 8px; padding: 0.75rem; }
+.cl-box { display: grid; gap: 0.6rem; padding: 1.1rem; background: #fff; border-radius: 8px; }
+.cl h1 { margin: 0; font: 700 1.35rem/1.2 system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; letter-spacing: 0; }
+.cl h2 { margin: 0 0 0.6rem; font: 700 1.1rem/1.2 system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; letter-spacing: 0; }
+.cl-sub, .cl-meta { margin: 0; color: #777; font-size: 0.8125rem; }
+.cl-price { margin: 0.25rem 0; font: 700 1.9rem/1 system-ui, sans-serif; }
+.cl-btn { padding: 0.7rem; border: 2px solid var(--cl-accent); border-radius: 8px; background: #fff; color: var(--cl-accent); font: 700 0.95rem system-ui, sans-serif; cursor: pointer; }
+.cl-btn-primary { background: var(--cl-accent); color: #fff; }
+.cl-seller { display: flex; align-items: center; gap: 0.75rem; padding-top: 0.6rem; border-top: 1px solid #e5e5e5; }
+.cl-seller div { display: grid; }
+.cl-seller span:not(.mp-avatar) { color: #777; font-size: 0.8125rem; }
+.cl-section { margin-top: 1rem; padding: 1.1rem; background: #fff; border-radius: 8px; }
+.cl-section p { margin: 0 0 0.75rem; }
+.cl-specs { display: grid; grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr)); gap: 0.75rem 1.5rem; margin: 0; }
+.cl-specs div { display: grid; padding-bottom: 0.5rem; border-bottom: 1px solid #eee; }
+.cl-specs dt { color: #777; font-size: 0.8125rem; }
+.cl-specs dd { margin: 0; font-weight: 600; }
+.cl .mp-features { grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr)); }
+.cl-tip { background: #fff8e1; }
+@media (max-width: 52rem) {
+  .cl-grid { grid-template-columns: 1fr; }
+  .cl-search { display: none; }
+}
+.cl .mp-demo a { color: #fff; }
