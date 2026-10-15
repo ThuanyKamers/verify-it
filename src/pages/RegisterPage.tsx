@@ -1,13 +1,26 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { Leaders } from '../components/Leaders'
 import { PlateInput } from '../components/PlateInput'
 import { useI18n, type MessageKey } from '../i18n'
 import type { useAppState } from '../lib/store'
 import { renavamCheckDigit } from '../lib/validation'
 import { DEMO_DOCUMENTS } from '../lib/seed'
-import { appendLog, DOCUMENTS, missingDocuments, OPTIONAL_DOCUMENTS, register, type DocumentKind, type Listing, type RegisterInput, type RegisterResult } from '../lib/verify'
+import { appendLog, DOCUMENTS, missingDocuments, OPTIONAL_DOCUMENTS, register, type DocumentKind, type Listing, type RegisterError, type RegisterInput, type RegisterResult } from '../lib/verify'
 
 type Props = ReturnType<typeof useAppState>
+
+/** Campos destacados em vermelho para cada erro do cadastro. */
+const FIELDS_BY_ERROR: Partial<Record<RegisterError, string[]>> = {
+  invalidUrl: ['url'],
+  urlAlreadyRegistered: ['url'],
+  duplicateOnSite: ['url'],
+  invalidPlate: ['plate'],
+  invalidVin: ['vin'],
+  invalidRenavam: ['renavam'],
+  missingVehicle: ['make', 'model'],
+  invalidYear: ['year'],
+  dataMismatch: ['plate', 'vin', 'renavam'],
+}
 
 const EMPTY: RegisterInput = { url: '', plate: '', vin: '', renavam: '', make: '', model: '', year: '', documents: {} }
 
@@ -31,6 +44,16 @@ export function RegisterPage({ state, update }: Props) {
   const { t, locale } = useI18n()
   const [form, setForm] = useState<RegisterInput>(EMPTY)
   const [result, setResult] = useState<RegisterResult | null>(null)
+  const alertRef = useRef<HTMLDivElement>(null)
+
+  // Depois de um envio recusado, leva o foco (e a tela) para a lista de erros.
+  useEffect(() => {
+    if (result && !result.ok) alertRef.current?.focus()
+  }, [result])
+
+  const bad = new Set(result && !result.ok ? result.errors.flatMap((err) => FIELDS_BY_ERROR[err] ?? []) : [])
+  const missingDocs = result && !result.ok ? (result.missing ?? []) : []
+  const invalid = (field: string) => (bad.has(field) ? true : undefined)
 
   const set = (field: Exclude<keyof RegisterInput, 'documents'>) => (value: string) => setForm((f) => ({ ...f, [field]: value }))
   const setDocument = (kind: DocumentKind, name: string) => setForm((f) => ({ ...f, documents: { ...f.documents, [kind]: name } }))
@@ -82,7 +105,7 @@ export function RegisterPage({ state, update }: Props) {
       <p className="lead">{t('register.lead')}</p>
 
       {result && !result.ok && (
-        <div className="alert" role="alert">
+        <div className="alert" role="alert" tabIndex={-1} ref={alertRef}>
           <h2>{t('register.rejected.title')}</h2>
           <ul className="reasons">
             {result.errors.map((err) => (
@@ -99,31 +122,31 @@ export function RegisterPage({ state, update }: Props) {
       <form className="form" onSubmit={onSubmit} noValidate>
         <label className="field">
           {t('register.url')}
-          <input type="url" inputMode="url" value={form.url} onChange={(e) => set('url')(e.target.value)} placeholder="https://www.kleinanzeigen.de/..." />
+          <input type="url" inputMode="url" value={form.url} aria-invalid={invalid('url')} onChange={(e) => set('url')(e.target.value)} placeholder="https://www.kleinanzeigen.de/..." />
         </label>
         <div className="grid-3">
           <label className="field">
             {t('register.make')}
-            <input value={form.make} onChange={(e) => set('make')(e.target.value)} />
+            <input value={form.make} aria-invalid={invalid('make')} onChange={(e) => set('make')(e.target.value)} />
           </label>
           <label className="field">
             {t('register.model')}
-            <input value={form.model} onChange={(e) => set('model')(e.target.value)} />
+            <input value={form.model} aria-invalid={invalid('model')} onChange={(e) => set('model')(e.target.value)} />
           </label>
           <label className="field">
             {t('register.year')}
-            <input inputMode="numeric" maxLength={4} value={form.year} onChange={(e) => set('year')(e.target.value)} />
+            <input inputMode="numeric" maxLength={4} value={form.year} aria-invalid={invalid('year')} onChange={(e) => set('year')(e.target.value)} />
           </label>
         </div>
         <div className="grid-3">
-          <PlateInput value={form.plate} onChange={set('plate')} label={t('register.plate')} />
+          <PlateInput value={form.plate} onChange={set('plate')} label={t('register.plate')} invalid={bad.has('plate')} />
           <label className="field">
             {t('register.vin')}
-            <input value={form.vin} maxLength={17} onChange={(e) => set('vin')(e.target.value.toUpperCase())} />
+            <input value={form.vin} aria-invalid={invalid('vin')} maxLength={17} onChange={(e) => set('vin')(e.target.value.toUpperCase())} />
           </label>
           <label className="field">
             {t('register.renavam')}
-            <input inputMode="numeric" maxLength={11} value={form.renavam} onChange={(e) => set('renavam')(e.target.value)} />
+            <input inputMode="numeric" maxLength={11} value={form.renavam} aria-invalid={invalid('renavam')} onChange={(e) => set('renavam')(e.target.value)} />
           </label>
         </div>
         <div className="grid-3">
@@ -157,7 +180,7 @@ export function RegisterPage({ state, update }: Props) {
               const file = form.documents[kind]
               const optional = OPTIONAL_DOCUMENTS.includes(kind)
               return (
-                <li key={kind} className={file ? 'doc doc-done' : 'doc'}>
+                <li key={kind} className={file ? 'doc doc-done' : missingDocs.includes(kind) ? 'doc doc-missing' : 'doc'}>
                   <span className="doc-mark" aria-hidden="true">{file ? '✓' : ''}</span>
                   <div className="doc-text">
                     <strong>{t(`doc.${kind}`)}{optional && <span className="doc-optional"> · {t('register.docs.optional')}</span>}</strong>
