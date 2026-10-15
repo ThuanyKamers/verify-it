@@ -28,11 +28,11 @@ const COMMON: MessageKey[] = ['mp.feat.ac', 'mp.feat.power', 'mp.feat.abs', 'mp.
 const BY_PLATE: Record<string, MockDetails> = {
   'B KM 4821': {
     price: 21900, km: 62400, city: 'Berlin', transmission: 'mp.trans.auto', fuel: 'mp.fuel.flex',
-    exterior: 'color.white', interior: 'color.black', bodyColor: '#e9ebee', description: 'mp.desc.civic',
+    exterior: 'color.red', interior: 'color.black', bodyColor: '#c8242b', description: 'mp.desc.civic',
     features: [...COMMON, 'mp.feat.camera', 'mp.feat.leather'], seller: 'Marcos A.', memberSince: 2016, owners: 1,
   },
   'M TC 2021': {
-    price: 26500, km: 38100, city: 'München', transmission: 'mp.trans.auto', fuel: 'mp.fuel.flex',
+    price: 26500, km: 38100, city: 'München', transmission: 'mp.trans.auto', fuel: 'mp.fuel.hybrid',
     exterior: 'color.silver', interior: 'color.beige', bodyColor: '#b7bcc4', description: 'mp.desc.corolla',
     features: [...COMMON, 'mp.feat.camera', 'mp.feat.sunroof'], seller: 'Helena R.', memberSince: 2013, owners: 2,
   },
