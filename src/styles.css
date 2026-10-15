@@ -125,8 +125,15 @@ input[type='file']::file-selector-button { margin-right: 0.8rem; padding: 0.35re
 .actions { display: flex; flex-wrap: wrap; gap: 0.75rem; }
 
 .plate-field { display: grid; gap: 0.35rem; justify-items: start; }
-.plate-field > label { font-weight: 600; font-size: 1rem; }
-.plate { display: flex; width: 20rem; max-width: 100%; overflow: hidden; background: #fff; border: 3px solid var(--ink); border-radius: 10px; }
+.plate-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.25rem 0.75rem; width: 20rem; max-width: 100%; }
+.plate-head > label { font-weight: 600; font-size: 1rem; }
+.plate-country select { min-height: 2.75rem; padding: 0.2rem 0.5rem; font: 600 0.95rem var(--text); color: var(--ink); background: var(--sheet); border: 2px solid var(--rule); border-radius: 4px; }
+.plate { display: flex; flex-direction: column; width: 20rem; max-width: 100%; overflow: hidden; background: #fff; border: 3px solid var(--ink); border-radius: 10px; }
+.plate-row { display: flex; flex: 1; min-height: 3.4rem; }
+.plate-region { display: grid; place-items: center; flex: none; width: 2.6rem; background: #003399; color: #fff; font: 700 1.1rem/1 var(--display); }
+.plate-mercosul { display: flex; align-items: center; justify-content: center; position: relative; height: 1.5rem; background: #003399; color: #fff; font: 700 0.95rem/1 var(--text); letter-spacing: 0.25em; }
+.plate-mercosul svg { position: absolute; right: 0.5rem; width: 1.4rem; height: 1rem; }
+.plate-br .plate-input { letter-spacing: 0.08em; }
 .plate:focus-within { outline: 3px solid var(--plate); outline-offset: 3px; }
 .plate-band { display: grid; align-content: center; justify-items: center; flex: none; width: 2.6rem; background: var(--plate); color: #fff; font: 700 1.1rem/1 var(--display); }
 .plate-band svg { width: 1.6rem; height: 1.6rem; margin-bottom: 0.15rem; fill: #fc0; }

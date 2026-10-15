@@ -3,7 +3,7 @@ import { Leaders } from '../components/Leaders'
 import { PlateInput } from '../components/PlateInput'
 import { useI18n, type MessageKey } from '../i18n'
 import type { useAppState } from '../lib/store'
-import { renavamCheckDigit } from '../lib/validation'
+import { PLATES, renavamCheckDigit } from '../lib/validation'
 import { DEMO_DOCUMENTS } from '../lib/seed'
 import { appendLog, DOCUMENTS, missingDocuments, OPTIONAL_DOCUMENTS, register, type DocumentKind, type Listing, type RegisterError, type RegisterInput, type RegisterResult } from '../lib/verify'
 
@@ -28,6 +28,7 @@ const EMPTY: RegisterInput = { url: '', plate: '', vin: '', renavam: '', make: '
 const DEMO: RegisterInput = {
   url: 'https://www.kleinanzeigen.de/s-anzeige/honda-civic-exl-2019/2845123456-216-3331',
   plate: 'B KM 4821',
+  plateCountry: 'DE',
   vin: 'JHMFC2650KS100001',
   renavam: '0123456789' + renavamCheckDigit('0123456789'),
   make: 'Honda',
@@ -55,7 +56,7 @@ export function RegisterPage({ state, update }: Props) {
   const missingDocs = result && !result.ok ? (result.missing ?? []) : []
   const invalid = (field: string) => (bad.has(field) ? true : undefined)
 
-  const set = (field: Exclude<keyof RegisterInput, 'documents'>) => (value: string) => setForm((f) => ({ ...f, [field]: value }))
+  const set = (field: Exclude<keyof RegisterInput, 'documents' | 'plateCountry'>) => (value: string) => setForm((f) => ({ ...f, [field]: value }))
   const setDocument = (kind: DocumentKind, name: string) => setForm((f) => ({ ...f, documents: { ...f.documents, [kind]: name } }))
   const required = DOCUMENTS.filter((d) => !OPTIONAL_DOCUMENTS.includes(d))
   const uploaded = required.length - missingDocuments(form.documents).length
@@ -112,7 +113,7 @@ export function RegisterPage({ state, update }: Props) {
               <li key={err}>
                 {err === 'missingDocuments'
                   ? t('error.missingDocuments', { docs: (result.missing ?? []).map((d) => t(`doc.${d}`)).join(', ') })
-                  : errorText(t, err, result.conflict)}
+                  : errorText(t, err, result.conflict, PLATES[form.plateCountry ?? 'DE'].example)}
               </li>
             ))}
           </ul>
@@ -139,7 +140,7 @@ export function RegisterPage({ state, update }: Props) {
           </label>
         </div>
         <div className="grid-3">
-          <PlateInput value={form.plate} onChange={set('plate')} label={t('register.plate')} invalid={bad.has('plate')} />
+          <PlateInput value={form.plate} onChange={set('plate')} country={form.plateCountry ?? 'DE'} onCountryChange={(c) => setForm((f) => ({ ...f, plateCountry: c }))} label={t('register.plate')} invalid={bad.has('plate')} />
           <label className="field">
             {t('register.vin')}
             <input value={form.vin} aria-invalid={invalid('vin')} maxLength={17} onChange={(e) => set('vin')(e.target.value.toUpperCase())} />
@@ -213,6 +214,6 @@ export function RegisterPage({ state, update }: Props) {
   )
 }
 
-function errorText(t: ReturnType<typeof useI18n>['t'], err: string, conflict?: Listing): string {
-  return t(`error.${err}` as MessageKey, { id: conflict?.checkId ?? '', site: conflict?.site ?? '' })
+function errorText(t: ReturnType<typeof useI18n>['t'], err: string, conflict: Listing | undefined, example: string): string {
+  return t(`error.${err}` as MessageKey, { id: conflict?.checkId ?? '', site: conflict?.site ?? '', example })
 }

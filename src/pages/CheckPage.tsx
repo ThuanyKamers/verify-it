@@ -6,7 +6,7 @@ import { useI18n, type MessageKey } from '../i18n'
 import { DEMO_URLS } from '../lib/seed'
 import type { useAppState } from '../lib/store'
 import { parseListingUrl } from '../lib/url'
-import { maskPlate } from '../lib/validation'
+import { maskPlate, type PlateCountry } from '../lib/validation'
 import { addReport, appendLog, check, type CheckResult } from '../lib/verify'
 
 type Props = ReturnType<typeof useAppState>
@@ -15,13 +15,14 @@ export function CheckPage({ state, update }: Props) {
   const { t, locale } = useI18n()
   const [url, setUrl] = useState('')
   const [plate, setPlate] = useState('')
+  const [plateCountry, setPlateCountry] = useState<PlateCountry>('DE')
   const [result, setResult] = useState<CheckResult | null>(null)
   const [reported, setReported] = useState(false)
   // Muda a cada consulta para que o carimbo "bata" de novo, mesmo com o mesmo resultado.
   const [run, setRun] = useState(0)
 
-  function runCheck(nextUrl: string, nextPlate: string) {
-    const res = check(state, { url: nextUrl, plate: nextPlate })
+  function runCheck(nextUrl: string, nextPlate: string, country: PlateCountry = plateCountry) {
+    const res = check(state, { url: nextUrl, plate: nextPlate, plateCountry: country })
     setResult(res)
     setReported(false)
     setRun((n) => n + 1)
@@ -38,7 +39,8 @@ export function CheckPage({ state, update }: Props) {
   function tryExample(exampleUrl: string, examplePlate = '') {
     setUrl(exampleUrl)
     setPlate(examplePlate)
-    runCheck(exampleUrl, examplePlate)
+    setPlateCountry('DE')
+    runCheck(exampleUrl, examplePlate, 'DE')
   }
 
   function report() {
@@ -66,7 +68,7 @@ export function CheckPage({ state, update }: Props) {
           <input type="url" inputMode="url" required value={url} onChange={(e) => setUrl(e.target.value)} placeholder={t('check.urlPlaceholder')} />
         </label>
         <div className="check-row">
-          <PlateInput value={plate} onChange={setPlate} label={t('check.plate')} />
+          <PlateInput value={plate} onChange={setPlate} country={plateCountry} onCountryChange={setPlateCountry} label={t('check.plate')} />
           <button className="button button-primary" type="submit">{t('check.submit')}</button>
         </div>
         <p className="muted small">{t('check.plateHint')}</p>
