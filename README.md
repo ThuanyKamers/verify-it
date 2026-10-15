@@ -1,46 +1,48 @@
 # Verify It
 
-Protótipo de uma plataforma que ajuda compradores de veículos usados a descobrir se um anúncio online é verdadeiro antes de negociar.
+Prototype of a platform that helps used-vehicle buyers find out whether an online listing is genuine before they negotiate.
 
-**Acesse:** https://thuanykamers.github.io/verify-it/
+**Live site:** https://thuanykamers.github.io/verify-it/
 
-## O problema
+## The problem
 
-Golpes com anúncios de veículos causaram R$ 2,7 bilhões de prejuízo a 91 mil vítimas (Veja Negócios). Na pesquisa feita no Startup Weekend, 80% dos entrevistados já sofreram tentativa de golpe e 100% usariam uma plataforma de verificação. O golpe mais comum é o anúncio clonado: o golpista copia fotos e dados de um anúncio real e publica de novo, no mesmo site, com outro contato.
+Vehicle-listing scams caused R$ 2.7 billion in losses to 91,000 victims (Veja Negócios). In the Startup Weekend survey, 80% of respondents had already faced a scam attempt and 100% would use a verification platform. The most common scam is the cloned listing: the scammer copies photos and details from a real listing and posts them again, on the same site, with a different contact.
 
-## Como funciona
+## How it works
 
-Ao abrir o site, a pessoa passa por um login simulado e escolhe **Sou vendedor** ou **Sou comprador**. Cada perfil vê só as telas que usa.
+On opening the site, the person goes through a simulated login and picks **I'm a seller** or **I'm a buyer**. Each role sees only the screens it uses.
 
-1. **O dono cadastra o anúncio.** Informa o link, a placa, o chassi, o RENAVAM e envia o comprovante de propriedade (CRLV-e). Pode cadastrar um anúncio por site (OLX, Facebook, Webmotors...).
-2. **A plataforma verifica.** Confere os documentos e recusa um segundo anúncio do mesmo veículo no mesmo site.
-3. **O comprador cola o link** do anúncio que está vendo e recebe uma das respostas:
-   - ✅ **Verificado:** é o link cadastrado pelo dono.
-   - 🚨 **Possível golpe:** o veículo tem anúncio verificado em outro link do mesmo site, o dono marcou como vendido, ou o link foi denunciado.
-   - ❔ **Não verificado:** não há registro; se o veículo estiver verificado em outro site, mostramos o link oficial.
+1. **The owner registers the listing.** They enter the link, plate, VIN and RENAVAM, and upload proof of ownership (CRLV-e). They can register one listing per site (OLX, Facebook, Webmotors...).
+2. **The platform verifies.** It checks the documents and rejects a second listing of the same vehicle on the same site.
+3. **The buyer pastes the link** of the listing they are looking at and gets one of these answers:
+   - ✅ **Verified:** it is the link registered by the owner.
+   - 🚨 **Possible scam:** the vehicle has a verified listing on another link of the same site, the owner marked it as sold, or the link was reported.
+   - ❔ **Unverified:** there is no record; if the vehicle is verified on another site, we show the official link.
 
-O fluxo completo está em [docs/fluxo.png](docs/fluxo.png).
+The full flow is in [docs/fluxo.png](docs/fluxo.png).
 
-## Idiomas
+For Facebook listings, the "Go to the original listing" button opens a demo copy of a marketplace page built from the registered data (with illustrations instead of photos).
 
-Inglês (padrão), português e alemão, com seletor no topo da página. Os textos ficam em [`src/i18n.tsx`](src/i18n.tsx); o TypeScript acusa erro se faltar alguma tradução.
+## Languages
 
-## Limitações do protótipo
+English (default), Portuguese and German, with a switch at the top of the page. The strings live in [`src/i18n.tsx`](src/i18n.tsx); TypeScript reports an error if a translation is missing.
 
-- A verificação de propriedade é **simulada**: só conferimos o formato da placa e do chassi e o dígito verificador do RENAVAM. A consulta real exige integração com DETRAN/SENATRAN.
-- Os dados ficam **no navegador** (localStorage), com anúncios de exemplo fictícios. Para vendedor e comprador em aparelhos diferentes, troque `localStore` em [`src/lib/store.ts`](src/lib/store.ts) por um banco online (ex.: Supabase).
+## Prototype limitations
 
-## Desenvolvimento
+- Ownership verification is **simulated**: we only check the plate and VIN format and the RENAVAM check digit. A real lookup requires integration with DETRAN/SENATRAN.
+- Data stays **in the browser** (localStorage), with fictitious sample listings. For a seller and a buyer on different devices, replace `localStore` in [`src/lib/store.ts`](src/lib/store.ts) with an online database (e.g. Supabase).
+
+## Development
 
 ```bash
 npm install
-npm run dev      # servidor local
-npm test         # testes da lógica de verificação
-npm run build    # gera a versão de produção em dist/
+npm run dev      # local server
+npm test         # verification logic tests
+npm run build    # production build in dist/
 ```
 
-As regras de negócio ficam em [`src/lib/verify.ts`](src/lib/verify.ts), separadas da interface, para poderem ser reaproveitadas num back-end.
+The business rules live in [`src/lib/verify.ts`](src/lib/verify.ts), separate from the UI, so they can be reused in a back-end.
 
-### Publicação
+### Deployment
 
-Cada push na `main` publica o site no GitHub Pages pelo workflow [`deploy.yml`](.github/workflows/deploy.yml). Na primeira vez, ative em **Settings → Pages → Source: GitHub Actions**.
+Every push to `main` publishes the site to GitHub Pages through the [`deploy.yml`](.github/workflows/deploy.yml) workflow. The first time, enable **Settings → Pages → Source: GitHub Actions**.
