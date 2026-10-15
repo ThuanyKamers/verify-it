@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { LANGUAGES, useI18n, type MessageKey } from './i18n'
 import { loadRole, saveRole, type Role } from './lib/session'
 import { useAppState } from './lib/store'
+import { scrollToTop, startSmoothScroll } from './lib/smoothScroll'
 import { ActivityPage } from './pages/ActivityPage'
 import { CheckPage } from './pages/CheckPage'
 import { HowPage } from './pages/HowPage'
@@ -54,12 +55,14 @@ export function App() {
   const [vehicleId, setVehicleId] = useState<string | null>(readVehicleId)
   const app = useAppState()
 
+  useEffect(() => startSmoothScroll(), [])
+
   useEffect(() => {
     const onHash = () => {
       setListingId(readListingId())
       setVehicleId(readVehicleId())
       setRoute(readRoute(role))
-      window.scrollTo(0, 0)
+      scrollToTop()
     }
     window.addEventListener('hashchange', onHash)
     return () => window.removeEventListener('hashchange', onHash)
