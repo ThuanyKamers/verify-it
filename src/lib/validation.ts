@@ -1,15 +1,22 @@
 // Validações de formato dos documentos do veículo.
 // No protótipo a verificação de propriedade é simulada: conferimos apenas
-// se os dados são bem formados. A consulta real (DETRAN/SENATRAN) fica para depois.
+// se os dados são bem formados. A consulta real (DETRAN/SENATRAN, KBA) fica para depois.
 
 /** Remove espaços, hífens e pontos e deixa em maiúsculas. */
 export function clean(value: string): string {
   return value.replace(/[\s.-]/g, '').toUpperCase()
 }
 
-/** Placa antiga (ABC1234) ou Mercosul (ABC1D23). */
+const PLATE_PATTERN = /^([A-ZÄÖÜ]{1,3})[\s-]*([A-Z]{1,2})[\s-]*([1-9][0-9]{0,3})([EH]?)$/
+
+/** Placa alemã no formato canônico "B AB 1234" (distrito, letras, números, E/H opcional), ou null se for inválida. */
+export function normalizePlate(value: string): string | null {
+  const m = PLATE_PATTERN.exec(value.trim().toUpperCase())
+  return m ? `${m[1]} ${m[2]} ${m[3]}${m[4]}` : null
+}
+
 export function isValidPlate(value: string): boolean {
-  return /^[A-Z]{3}[0-9][A-Z0-9][0-9]{2}$/.test(clean(value))
+  return normalizePlate(value) !== null
 }
 
 /** Chassi (VIN): 17 caracteres, sem I, O ou Q. */
@@ -38,8 +45,10 @@ export function normalizeRenavam(value: string): string {
   return digits.length === 9 ? digits.padStart(11, '0') : digits
 }
 
-/** Mostra só parte da placa para o comprador (ex.: ABC-1**3). */
+/** Mostra só parte da placa para o comprador (ex.: B AB 12**). */
 export function maskPlate(plate: string): string {
-  const p = clean(plate)
-  return `${p.slice(0, 3)}-${p[3]}**${p[6]}`
+  const m = PLATE_PATTERN.exec(plate.toUpperCase())
+  if (!m) return plate
+  const digits = m[3].length > 2 ? `${m[3].slice(0, -2)}**` : '**'
+  return `${m[1]} ${m[2]} ${digits}${m[4]}`
 }

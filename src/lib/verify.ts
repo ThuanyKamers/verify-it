@@ -6,7 +6,7 @@
 //   Comprador: cola o link que está vendo -> verificado / possível golpe / não verificado
 
 import { parseListingUrl } from './url'
-import { clean, isValidPlate, isValidRenavam, isValidVin, normalizeRenavam } from './validation'
+import { clean, isValidRenavam, isValidVin, normalizePlate, normalizeRenavam } from './validation'
 
 export interface Listing {
   checkId: string
@@ -121,7 +121,8 @@ export function register(
   const errors: RegisterError[] = []
   const parsed = parseListingUrl(input.url)
   if (!parsed) errors.push('invalidUrl')
-  if (!isValidPlate(input.plate)) errors.push('invalidPlate')
+  const plate = normalizePlate(input.plate)
+  if (!plate) errors.push('invalidPlate')
   if (!isValidVin(input.vin)) errors.push('invalidVin')
   if (!isValidRenavam(input.renavam)) errors.push('invalidRenavam')
   if (!input.make.trim() || !input.model.trim()) errors.push('missingVehicle')
@@ -130,7 +131,7 @@ export function register(
   if (!input.proofFileName.trim()) errors.push('missingProof')
   if (errors.length || !parsed) return { ok: false, errors }
 
-  const vehicle = { plate: clean(input.plate), vin: clean(input.vin), renavam: normalizeRenavam(input.renavam) }
+  const vehicle = { plate: plate ?? '', vin: clean(input.vin), renavam: normalizeRenavam(input.renavam) }
   const active = state.listings.filter((l) => l.status === 'active')
 
   const sameUrl = active.find((l) => l.key === parsed.key)
@@ -182,7 +183,7 @@ export function check(state: AppState, input: { url: string; plate?: string }): 
 
   if (listing?.status === 'sold') reasons.push('sold')
 
-  const plate = input.plate && isValidPlate(input.plate) ? clean(input.plate) : undefined
+  const plate = (input.plate && normalizePlate(input.plate)) || undefined
   if (plate) {
     related = active.filter((l) => l.plate === plate)
     if (related.some((l) => l.site === parsed.site)) reasons.push('plateOnOtherUrl')

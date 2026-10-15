@@ -5,8 +5,8 @@ import { addReport, check, markSold, register, type AppState, type RegisterInput
 
 const civic: RegisterInput = {
   url: 'https://www.webmotors.com.br/comprar/honda/civic/123',
-  plate: 'RIO2A18',
-  vin: '93HFC2650KZ100001',
+  plate: 'B KM 4821',
+  vin: 'JHMFC2650KS100001',
   renavam: '0123456789' + renavamCheckDigit('0123456789'),
   make: 'Honda',
   model: 'Civic EXL',
@@ -67,7 +67,7 @@ describe('cadastro do vendedor', () => {
 
   it('recusa documentos que não batem com o veículo já verificado', () => {
     const state = registered(empty, civic)
-    const res = register(state, { ...civic, url: 'https://olx.com.br/x', vin: '9BRBL3HE0M0123456' })
+    const res = register(state, { ...civic, url: 'https://olx.com.br/x', vin: 'SB1ZS3HE0M0123456' })
     expect(res.ok).toBe(false)
     if (!res.ok) expect(res.errors).toEqual(['dataMismatch'])
   })
@@ -97,13 +97,13 @@ describe('consulta do comprador', () => {
   })
 
   it('aponta golpe quando o veículo já foi vendido', () => {
-    const res = check(seed, { url: 'https://carro.mercadolivre.com.br/MLB-3456789012-volkswagen-gol-10-2015' })
+    const res = check(seed, { url: 'https://www.kleinanzeigen.de/s-anzeige/vw-golf-vii-1-6-tdi/2734567890-216-9054' })
     expect(res.status).toBe('scam')
     expect(res.reasons).toEqual(['sold'])
   })
 
   it('indica os links oficiais quando o veículo só está verificado em outro site', () => {
-    const res = check(seed, { url: 'https://www.webmotors.com.br/comprar/honda/civic/999', plate: 'RIO2A18' })
+    const res = check(seed, { url: 'https://www.webmotors.com.br/comprar/honda/civic/999', plate: 'B KM 4821' })
     expect(res.status).toBe('unverified')
     expect(res.reasons).toEqual(['knownOnOtherSites'])
   })

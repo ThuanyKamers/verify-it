@@ -1,5 +1,6 @@
 /* Cópias de sites de classificados: a cor da marca muda por site, o resto é comum. */
 .cl { --cl-head: #fff; --cl-head-text: #6e0ad6; --cl-accent: #f28000; --cl-accent-text: #fff; --cl-link: #6e0ad6; background: #f4f4f4; }
+.cl[data-site='kleinanzeigen'] { --cl-head: #fff; --cl-head-text: #326916; --cl-accent: #5da813; --cl-link: #326916; }
 .cl[data-site='olx'] { --cl-head: #fff; --cl-head-text: #6e0ad6; --cl-accent: #f28000; --cl-link: #6e0ad6; }
 .cl[data-site='webmotors'] { --cl-head: #e4002b; --cl-head-text: #fff; --cl-accent: #e4002b; --cl-link: #c20023; }
 .cl[data-site='mercadolivre'] { --cl-head: #ffe600; --cl-head-text: #2d3277; --cl-accent: #3483fa; --cl-link: #3483fa; }

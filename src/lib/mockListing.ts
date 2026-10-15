@@ -24,18 +24,18 @@ export interface MockDetails {
 const COMMON: MessageKey[] = ['mp.feat.ac', 'mp.feat.power', 'mp.feat.abs', 'mp.feat.airbag', 'mp.feat.multimedia']
 
 const BY_PLATE: Record<string, MockDetails> = {
-  RIO2A18: {
-    price: 119900, km: 62400, city: 'Florianópolis, SC', transmission: 'mp.trans.auto', fuel: 'mp.fuel.flex',
+  'B KM 4821': {
+    price: 21900, km: 62400, city: 'Berlin', transmission: 'mp.trans.auto', fuel: 'mp.fuel.flex',
     exterior: 'color.white', interior: 'color.black', bodyColor: '#e9ebee', description: 'mp.desc.civic',
     features: [...COMMON, 'mp.feat.camera', 'mp.feat.leather'], seller: 'Marcos A.', memberSince: 2016, owners: 1,
   },
-  BRA2E19: {
-    price: 142500, km: 38100, city: 'Curitiba, PR', transmission: 'mp.trans.auto', fuel: 'mp.fuel.flex',
+  'M TC 2021': {
+    price: 26500, km: 38100, city: 'München', transmission: 'mp.trans.auto', fuel: 'mp.fuel.flex',
     exterior: 'color.silver', interior: 'color.beige', bodyColor: '#b7bcc4', description: 'mp.desc.corolla',
     features: [...COMMON, 'mp.feat.camera', 'mp.feat.sunroof'], seller: 'Helena R.', memberSince: 2013, owners: 2,
   },
-  ABC1234: {
-    price: 34900, km: 112800, city: 'Porto Alegre, RS', transmission: 'mp.trans.manual', fuel: 'mp.fuel.flex',
+  'HH GR 515': {
+    price: 9490, km: 112800, city: 'Hamburg', transmission: 'mp.trans.manual', fuel: 'mp.fuel.flex',
     exterior: 'color.red', interior: 'color.gray', bodyColor: '#b4262c', description: 'mp.desc.gol',
     features: ['mp.feat.ac', 'mp.feat.power', 'mp.feat.abs'], seller: 'Paulo S.', memberSince: 2018, owners: 3,
   },
@@ -51,10 +51,11 @@ export function mockDetails(l: Listing): MockDetails {
   return BY_PLATE[l.plate] ?? FALLBACK
 }
 
-export type SiteTheme = 'facebook' | 'olx' | 'webmotors' | 'mercadolivre' | 'generic'
+export type SiteTheme = 'facebook' | 'kleinanzeigen' | 'olx' | 'webmotors' | 'mercadolivre' | 'generic'
 
 export const SITE_NAMES: Record<SiteTheme, string> = {
   facebook: 'Marketplace',
+  kleinanzeigen: 'Kleinanzeigen',
   olx: 'OLX',
   webmotors: 'webmotors',
   mercadolivre: 'mercado livre',
@@ -63,6 +64,7 @@ export const SITE_NAMES: Record<SiteTheme, string> = {
 
 export function siteTheme(site: string): SiteTheme {
   if (site.includes('facebook')) return 'facebook'
+  if (site.includes('kleinanzeigen')) return 'kleinanzeigen'
   if (site.includes('olx')) return 'olx'
   if (site.includes('webmotors')) return 'webmotors'
   if (site.includes('mercadolivre')) return 'mercadolivre'

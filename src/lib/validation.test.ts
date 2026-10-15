@@ -1,17 +1,23 @@
 import { describe, expect, it } from 'vitest'
-import { isValidPlate, isValidRenavam, isValidVin, maskPlate, renavamCheckDigit } from './validation'
+import { isValidPlate, isValidRenavam, isValidVin, maskPlate, normalizePlate, renavamCheckDigit } from './validation'
 
 describe('placa', () => {
-  it('aceita formato antigo e Mercosul', () => {
-    expect(isValidPlate('ABC1234')).toBe(true)
-    expect(isValidPlate('abc-1d23')).toBe(true)
+  it('aceita placas alemãs e padroniza o formato', () => {
+    expect(isValidPlate('B AB 1234')).toBe(true)
+    expect(normalizePlate('b-ab1234')).toBe('B AB 1234')
+    expect(normalizePlate('M TC 2021E')).toBe('M TC 2021E')
+    expect(normalizePlate('HH GR 515')).toBe('HH GR 515')
   })
   it('recusa formatos inválidos', () => {
-    expect(isValidPlate('AB12345')).toBe(false)
-    expect(isValidPlate('ABCD123')).toBe(false)
+    expect(isValidPlate('ABC1D23')).toBe(false)
+    expect(isValidPlate('B AB')).toBe(false)
+    expect(isValidPlate('B AB 12345')).toBe(false)
+    expect(isValidPlate('B AB 0123')).toBe(false)
   })
   it('mascara a placa', () => {
-    expect(maskPlate('RIO2A18')).toBe('RIO-2**8')
+    expect(maskPlate('B KM 4821')).toBe('B KM 48**')
+    expect(maskPlate('HH GR 515')).toBe('HH GR 5**')
+    expect(maskPlate('B AB 12')).toBe('B AB **')
   })
 })
 

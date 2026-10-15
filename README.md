@@ -12,7 +12,7 @@ Vehicle-listing scams caused R$ 2.7 billion in losses to 91,000 victims (Veja Ne
 
 On opening the site, the person goes through a simulated login and picks **I'm a seller** or **I'm a buyer**. Each role sees only the screens it uses.
 
-1. **The owner registers the listing.** They enter the link, plate, VIN and RENAVAM, and upload proof of ownership (CRLV-e). They can register one listing per site (OLX, Facebook, Webmotors...).
+1. **The owner registers the listing.** They enter the link, plate, VIN and RENAVAM, and upload proof of ownership (CRLV-e). They can register one listing per site (Kleinanzeigen, Facebook, mobile.de...).
 2. **The platform verifies.** It checks the documents and rejects a second listing of the same vehicle on the same site.
 3. **The buyer pastes the link** of the listing they are looking at and gets one of these answers:
    - ✅ **Verified:** it is the link registered by the owner.
