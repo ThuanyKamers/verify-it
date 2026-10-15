@@ -84,10 +84,6 @@ export function ClassifiedPage({ listing: l }: { listing: Listing }) {
           </ul>
         </section>
 
-        <section className="cl-section cl-tip">
-          <h2>{t('cl.safety')}</h2>
-          <p>{t('cl.safetyBody')}</p>
-        </section>
       </main>
     </div>
   )
