@@ -59,11 +59,13 @@ export function describe(d: MockDetails, t: (key: MessageKey) => string): string
   return d.descriptionText ?? t(d.description)
 }
 
-export type SiteTheme = 'facebook' | 'kleinanzeigen' | 'standvirtual' | 'leboncoin' | 'olx' | 'webmotors' | 'mercadolivre' | 'generic'
+export type SiteTheme = 'facebook' | 'kleinanzeigen' | 'mobilede' | 'autoscout24' | 'standvirtual' | 'leboncoin' | 'olx' | 'webmotors' | 'mercadolivre' | 'generic'
 
 export const SITE_NAMES: Record<SiteTheme, string> = {
   facebook: 'Marketplace',
   kleinanzeigen: 'Kleinanzeigen',
+  mobilede: 'mobile.de',
+  autoscout24: 'AutoScout24',
   standvirtual: 'STANDVIRTUAL',
   leboncoin: 'leboncoin',
   olx: 'OLX',
@@ -75,12 +77,24 @@ export const SITE_NAMES: Record<SiteTheme, string> = {
 export function siteTheme(site: string): SiteTheme {
   if (site.includes('facebook')) return 'facebook'
   if (site.includes('kleinanzeigen')) return 'kleinanzeigen'
+  if (site.includes('mobile.de')) return 'mobilede'
+  if (site.includes('autoscout24')) return 'autoscout24'
   if (site.includes('standvirtual')) return 'standvirtual'
   if (site.includes('leboncoin')) return 'leboncoin'
   if (site.includes('olx')) return 'olx'
   if (site.includes('webmotors')) return 'webmotors'
   if (site.includes('mercadolivre')) return 'mercadolivre'
   return 'generic'
+}
+
+/** Nome do site como o comprador conhece (ex.: "Mercado Livre" para carro.mercadolivre.com.br). */
+export function siteLabel(site: string): string {
+  const theme = siteTheme(site)
+  if (theme === 'facebook') return 'Facebook Marketplace'
+  if (theme === 'mercadolivre') return 'Mercado Livre'
+  if (theme === 'webmotors') return 'Webmotors'
+  if (theme === 'standvirtual') return 'Standvirtual'
+  return theme === 'generic' ? site : SITE_NAMES[theme]
 }
 
 /** Endereço da página-cópia do anúncio: todo site tem uma cópia própria dentro do protótipo. */

@@ -94,14 +94,14 @@ describe('consulta do comprador', () => {
   it('confirma o link cadastrado pelo dono', () => {
     const res = check(seed, { url: DEMO_URLS.verified })
     expect(res.status).toBe('verified')
-    expect(res.related.map((l) => l.site)).toEqual(['facebook.com'])
+    expect(res.related.map((l) => l.site)).toEqual(['facebook.com', 'carro.mercadolivre.com.br'])
   })
 
   it('aponta golpe quando a placa está verificada em outro link do mesmo site', () => {
     const res = check({ ...seed, reports: [] }, { url: DEMO_URLS.cloned, plate: DEMO_URLS.clonedPlate })
     expect(res.status).toBe('scam')
     expect(res.reasons).toEqual(['plateOnOtherUrl'])
-    expect(res.related.length).toBe(2)
+    expect(res.related.length).toBe(3)
   })
 
   it('aponta golpe em link denunciado', () => {
