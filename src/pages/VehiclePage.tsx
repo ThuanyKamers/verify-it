@@ -1,16 +1,13 @@
 import { useState } from 'react'
 import { CarArt, type CarView } from '../components/CarArt'
 import { PhotoCredit, VehicleImage } from '../components/VehicleImage'
-import { useI18n, type MessageKey } from '../i18n'
+import { useI18n } from '../i18n'
 import { describe, mockDetails } from '../lib/mockListing'
 import { photoFor, vehicleKind } from '../lib/photos'
 import { maskPlate } from '../lib/validation'
 import type { AppState } from '../lib/verify'
 
 const VIEWS: CarView[] = ['side', 'front', 'rear', 'cabin']
-
-/** Etapas de verificação que o dono cumpriu ao cadastrar o veículo. */
-const STEPS: MessageKey[] = ['vp.step.plate', 'vp.step.docs', 'vp.step.vin', 'vp.step.selfie']
 
 /** Página do anúncio dentro do marketplace do Verify It: `#/market/{checkId}`. */
 export function VehiclePage({ state, checkId }: { state: AppState; checkId: string }) {
@@ -34,7 +31,6 @@ export function VehiclePage({ state, checkId }: { state: AppState; checkId: stri
   const sky = [...l.plate].reduce((sum, c) => sum + c.charCodeAt(0), 0) % 4
   const price = new Intl.NumberFormat(locale, { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(d.price)
   const km = `${new Intl.NumberFormat(locale).format(d.km)} km`
-  const since = new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(l.createdAt))
   const title = `${l.make} ${l.model}`
 
   const rows: [string, string][] = [
@@ -108,14 +104,6 @@ export function VehiclePage({ state, checkId }: { state: AppState; checkId: stri
               <span className="vehicle-avatar" aria-hidden="true">{d.seller.charAt(0)}</span>
               <span><strong>{d.seller}</strong><br /><span className="muted">{t('vp.owner')}</span></span>
             </div>
-          </div>
-
-          <div className="vehicle-card vehicle-verified">
-            <p className="vehicle-seal"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7" /></svg>{t('vp.verified')}</p>
-            <ul>
-              {STEPS.map((s) => <li key={s}>{t(s)}</li>)}
-            </ul>
-            <p className="small muted">{t('vp.code', { code: l.checkId, date: since })}</p>
           </div>
         </aside>
       </div>

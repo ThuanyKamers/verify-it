@@ -138,7 +138,6 @@ export function MarketPage({ state }: { state: AppState }) {
                 <p className="car-meta">{l.year} · {t('mk.km', { km: number.format(d.km) })} · {d.city}{place && !unknownPlace ? ` (${t('mk.away', { km: Math.round(distanceKm(place, d.city) ?? 0) })})` : ''}</p>
                 <p className="car-desc">{describe(d, t)}</p>
                 <p className="car-price">{euro.format(d.price)}</p>
-                <p className="car-verified"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7" /></svg>{t('vp.verified')}</p>
                 <p className="car-seller">{t('mk.seller', { name: d.seller })}</p>
               </div>
             </li>

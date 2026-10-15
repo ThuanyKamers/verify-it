@@ -25,8 +25,6 @@
 .car-card:hover { border-color: var(--plate); }
 .car-card:focus-within { outline: 3px solid var(--plate); outline-offset: 3px; }
 .car-link:focus-visible { outline: none; }
-.car-verified { display: inline-flex; align-items: center; gap: 0.35rem; margin: 0.3rem 0 0; color: var(--ok); font-weight: 700; font-size: 0.95rem; }
-.car-verified svg, .vehicle-seal svg { width: 1.1em; height: 1.1em; fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
 
 /* Anúncio dentro do marketplace */
 .vehicle { max-width: 72rem; }
@@ -62,11 +60,6 @@
 .vehicle-sent { padding: 0.75rem; background: #e3f2ea; color: var(--ok); font-weight: 600; border-radius: 3px; }
 .vehicle-seller { display: flex; align-items: center; gap: 0.75rem; margin-top: 0.4rem; padding-top: 0.9rem; border-top: 1px solid var(--rule); line-height: 1.35; }
 .vehicle-avatar { display: grid; flex: none; place-items: center; width: 2.75rem; height: 2.75rem; border-radius: 50%; background: var(--ink); color: var(--sheet); font-weight: 700; }
-.vehicle-verified { border-color: var(--ok); }
-.vehicle-seal { display: inline-flex; align-items: center; gap: 0.4rem; color: var(--ok); font: 700 1.4rem/1.1 var(--display); text-transform: uppercase; letter-spacing: 0.04em; }
-.vehicle-verified ul { display: grid; gap: 0.35rem; margin: 0; padding: 0; list-style: none; font-size: 1rem; }
-.vehicle-verified li { position: relative; padding-left: 1.4rem; }
-.vehicle-verified li::before { content: '✓'; position: absolute; left: 0; color: var(--ok); font-weight: 700; }
 
 .market-credits { margin-top: 2.5rem; padding-top: 1rem; border-top: 2px solid var(--ink); color: var(--ink-2); font-size: 0.9rem; }
 .market-credits h2 { margin: 0 0 0.4rem; font: 700 1rem/1.3 var(--text); color: var(--ink); }
