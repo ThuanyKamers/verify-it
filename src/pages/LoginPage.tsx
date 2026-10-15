@@ -9,33 +9,34 @@ export function LoginPage({ onLogin }: { onLogin: (role: Role) => void }) {
   const [password, setPassword] = useState('')
 
   return (
-    <section className="login">
-      <h1>{t('login.title')}</h1>
-      <p className="lead">{t('login.lead')}</p>
+    <section className="welcome">
+      <div className="welcome-copy">
+        <h1 className="display">{t('hero.title')}</h1>
+        <p className="lead">{t('hero.lede')}</p>
+      </div>
 
-      <form className="card form" onSubmit={(e) => e.preventDefault()}>
-        <label>
+      <form className="form sheet" onSubmit={(e) => e.preventDefault()}>
+        <h2>{t('login.title')}</h2>
+        <p className="muted">{t('login.lead')}</p>
+        <div className="role-buttons">
+          <button type="button" className="role" onClick={() => onLogin('buyer')}>
+            <strong>{t('login.buyer')}</strong>
+            <span>{t('login.buyerDesc')}</span>
+          </button>
+          <button type="button" className="role" onClick={() => onLogin('seller')}>
+            <strong>{t('login.seller')}</strong>
+            <span>{t('login.sellerDesc')}</span>
+          </button>
+        </div>
+        <label className="field">
           {t('login.email')}
-          <input type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="voce@exemplo.com" />
+          <input type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" />
         </label>
-        <label>
+        <label className="field">
           {t('login.password')}
           <input type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} />
         </label>
-
-        <div className="role-buttons">
-          <button type="button" className="role-button" onClick={() => onLogin('seller')}>
-            <span className="role-emoji" aria-hidden="true">🔑</span>
-            <strong>{t('login.seller')}</strong>
-            <small>{t('login.sellerDesc')}</small>
-          </button>
-          <button type="button" className="role-button" onClick={() => onLogin('buyer')}>
-            <span className="role-emoji" aria-hidden="true">🔍</span>
-            <strong>{t('login.buyer')}</strong>
-            <small>{t('login.buyerDesc')}</small>
-          </button>
-        </div>
-        <p className="note">{t('login.simulated')}</p>
+        <p className="muted small">{t('login.simulated')}</p>
       </form>
     </section>
   )

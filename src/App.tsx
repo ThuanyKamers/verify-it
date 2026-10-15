@@ -61,29 +61,31 @@ export function App() {
 
   return (
     <div className="app">
-      <header className="header">
-        <div className="header-inner">
+      <header className="masthead">
+        <div className="masthead-inner">
           <a className="brand" href={role ? `#/${ROUTES_BY_ROLE[role][0]}` : '#'}>
-            <svg viewBox="0 0 32 32" aria-hidden="true">
-              <path d="M16 2 4 7v8c0 7.5 5.1 13.4 12 15 6.9-1.6 12-7.5 12-15V7z" />
-              <path d="m10 16 4 4 8-9" className="check" />
-            </svg>
+            <span className="brand-mark" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7" /></svg>
+            </span>
             Verify It
           </a>
-          <div className="header-actions">
-            {role && (
-              <div className="session">
-                <span className="role-badge">{t(`header.role.${role}`)}</span>
-                <button type="button" className="link" onClick={logout}>{t('header.logout')}</button>
-              </div>
-            )}
+          {role && (
+            <nav className="nav" aria-label="Main">
+              {ROUTES_BY_ROLE[role].map((r) => (
+                <a key={r} href={`#/${r}`} aria-current={r === route ? 'page' : undefined}>
+                  {t(NAV[r])}
+                </a>
+              ))}
+            </nav>
+          )}
+          <div className="tools">
             <div className="lang-switch" role="group" aria-label={t('lang.label')}>
               {LANGUAGES.map((l) => (
                 <button
                   key={l.code}
                   type="button"
-                  className={l.code === lang ? 'active' : ''}
                   aria-pressed={l.code === lang}
+                  lang={l.htmlLang}
                   title={l.label}
                   onClick={() => setLang(l.code)}
                 >
@@ -91,17 +93,14 @@ export function App() {
                 </button>
               ))}
             </div>
+            {role && (
+              <div className="session">
+                <span>{t(`header.role.${role}`)}</span>
+                <button type="button" className="text-button" onClick={logout}>{t('header.logout')}</button>
+              </div>
+            )}
           </div>
         </div>
-        {role && (
-          <nav className="nav">
-            {ROUTES_BY_ROLE[role].map((r) => (
-              <a key={r} href={`#/${r}`} className={r === route ? 'active' : ''} aria-current={r === route ? 'page' : undefined}>
-                {t(NAV[r])}
-              </a>
-            ))}
-          </nav>
-        )}
       </header>
 
       <main className="main">

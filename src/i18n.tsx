@@ -3,16 +3,18 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 export type Lang = 'pt' | 'en' | 'de'
 
 export const LANGUAGES: { code: Lang; label: string; htmlLang: string; locale: string }[] = [
-  { code: 'pt', label: 'Português', htmlLang: 'pt-BR', locale: 'pt-BR' },
   { code: 'en', label: 'English', htmlLang: 'en', locale: 'en-US' },
+  { code: 'pt', label: 'Português', htmlLang: 'pt-BR', locale: 'pt-BR' },
   { code: 'de', label: 'Deutsch', htmlLang: 'de', locale: 'de-DE' },
 ]
 
 const pt = {
   'brand.tagline': 'Confira se o anúncio do carro é verdadeiro antes de negociar.',
+  'hero.title': 'Cole o anúncio. Saiba antes de pagar.',
+  'hero.lede': 'O Verify It diz se o dono de um carro usado cadastrou o anúncio que você está vendo. Nada para instalar e nada dentro do anúncio em que você precise confiar.',
   'nav.check': 'Verificar anúncio',
   'nav.register': 'Cadastrar anúncio',
-  'login.title': 'Entrar no Verify It',
+  'login.title': 'Entrar',
   'login.lead': 'Escolha como você quer usar a plataforma.',
   'login.email': 'E-mail',
   'login.password': 'Senha',
@@ -146,9 +148,11 @@ type Messages = Record<MessageKey, string>
 
 const en: Messages = {
   'brand.tagline': 'Check whether a car listing is genuine before you deal.',
+  'hero.title': 'Paste the ad. Know before you pay.',
+  'hero.lede': 'Verify It tells you whether the owner of a used car registered the listing you are looking at. Nothing to install, and nothing inside the ad you have to trust.',
   'nav.check': 'Check a listing',
   'nav.register': 'Register a listing',
-  'login.title': 'Sign in to Verify It',
+  'login.title': 'Sign in',
   'login.lead': 'Choose how you want to use the platform.',
   'login.email': 'Email',
   'login.password': 'Password',
@@ -279,9 +283,11 @@ const en: Messages = {
 
 const de: Messages = {
   'brand.tagline': 'Prüfen Sie, ob eine Autoanzeige echt ist, bevor Sie verhandeln.',
+  'hero.title': 'Anzeige einfügen. Vor dem Zahlen Bescheid wissen.',
+  'hero.lede': 'Verify It sagt Ihnen, ob der Halter eines Gebrauchtwagens die Anzeige registriert hat, die Sie gerade ansehen. Nichts zu installieren und nichts in der Anzeige, dem Sie vertrauen müssen.',
   'nav.check': 'Anzeige prüfen',
   'nav.register': 'Anzeige registrieren',
-  'login.title': 'Bei Verify It anmelden',
+  'login.title': 'Anmelden',
   'login.lead': 'Wählen Sie, wie Sie die Plattform nutzen möchten.',
   'login.email': 'E-Mail',
   'login.password': 'Passwort',
@@ -419,10 +425,9 @@ function initialLang(): Lang {
     const saved = localStorage.getItem(LANG_KEY)
     if (saved === 'pt' || saved === 'en' || saved === 'de') return saved
   } catch {
-    // ignora: usa o idioma do navegador
+    // sem armazenamento: usa o idioma padrão
   }
-  const nav = (typeof navigator !== 'undefined' ? navigator.language : 'pt').slice(0, 2)
-  return nav === 'en' || nav === 'de' ? nav : 'pt'
+  return 'en'
 }
 
 export function translate(lang: Lang, key: MessageKey, vars?: Record<string, string | number>): string {
