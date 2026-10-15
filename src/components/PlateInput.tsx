@@ -7,25 +7,28 @@ interface Props {
   hint?: string
 }
 
-/** Campo de placa desenhado como uma placa Mercosul: é o campo de verdade, não uma imagem. */
+/** Campo de placa desenhado como uma placa europeia (faixa azul da UE e "D"): é o campo de verdade, não uma imagem. */
 export function PlateInput({ value, onChange, label, hint }: Props) {
   const id = useId()
   return (
     <div className="plate-field">
       <label htmlFor={id}>{label}</label>
       <div className="plate">
-        <span className="plate-band" aria-hidden="true">BRASIL</span>
+        <span className="plate-band" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><circle cx="12.00" cy="5.00" r="1.15" /><circle cx="15.50" cy="5.94" r="1.15" /><circle cx="18.06" cy="8.50" r="1.15" /><circle cx="19.00" cy="12.00" r="1.15" /><circle cx="18.06" cy="15.50" r="1.15" /><circle cx="15.50" cy="18.06" r="1.15" /><circle cx="12.00" cy="19.00" r="1.15" /><circle cx="8.50" cy="18.06" r="1.15" /><circle cx="5.94" cy="15.50" r="1.15" /><circle cx="5.00" cy="12.00" r="1.15" /><circle cx="5.94" cy="8.50" r="1.15" /><circle cx="8.50" cy="5.94" r="1.15" /></svg>
+          D
+        </span>
         <input
           id={id}
           className="plate-input"
           value={value}
-          maxLength={7}
-          placeholder="ABC1D23"
+          maxLength={11}
+          placeholder="B AB 1234"
           autoCapitalize="characters"
           autoComplete="off"
           spellCheck={false}
           aria-describedby={hint ? `${id}-hint` : undefined}
-          onChange={(e) => onChange(e.target.value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase())}
+          onChange={(e) => onChange(e.target.value.replace(/[^a-zA-ZÄÖÜäöü0-9\s-]/g, '').toUpperCase())}
         />
       </div>
       {hint && <small id={`${id}-hint`}>{hint}</small>}

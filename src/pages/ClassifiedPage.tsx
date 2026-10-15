@@ -14,7 +14,7 @@ export function ClassifiedPage({ listing: l }: { listing: Listing }) {
   const d = mockDetails(l)
   const car = `${l.make} ${l.model}`
   const title = `${car} ${l.year}`
-  const price = new Intl.NumberFormat(locale, { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(d.price)
+  const price = new Intl.NumberFormat(locale, { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(d.price)
   const km = new Intl.NumberFormat(locale).format(d.km)
   const when = listedWhen(l.createdAt, locale, new Date().toISOString()) || t('mp.now')
   const sky = l.plate.charCodeAt(0) % 4
@@ -38,7 +38,7 @@ export function ClassifiedPage({ listing: l }: { listing: Listing }) {
       </div>
       <header className="cl-top">
         <div className="cl-top-inner">
-          <strong className="cl-brand">{SITE_NAMES[theme]}</strong>
+          <strong className="cl-brand">{theme === 'generic' ? l.site : SITE_NAMES[theme]}</strong>
           <span className="cl-search" aria-hidden="true">{t('cl.search')}</span>
         </div>
       </header>

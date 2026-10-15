@@ -1,5 +1,5 @@
 /* Verify It
-   Direção visual: papel de documento, tinta azul-marinho e o azul da placa Mercosul.
+   Direção visual: papel de documento, tinta azul-marinho e o azul da placa europeia.
    Uma tipografia só (Barlow, desenhada a partir de placas e sinalização de estrada),
    em duas larguras: condensada nos títulos e normal no texto.
    O único momento de destaque é o carimbo que "bate" no resultado de cada consulta. */
@@ -125,10 +125,11 @@ input[type='file']::file-selector-button { margin-right: 0.8rem; padding: 0.35re
 
 .plate-field { display: grid; gap: 0.35rem; justify-items: start; }
 .plate-field > label { font-weight: 600; font-size: 1rem; }
-.plate { width: 15rem; max-width: 100%; overflow: hidden; background: #fff; border: 3px solid var(--ink); border-radius: 10px; }
+.plate { display: flex; width: 20rem; max-width: 100%; overflow: hidden; background: #fff; border: 3px solid var(--ink); border-radius: 10px; }
 .plate:focus-within { outline: 3px solid var(--plate); outline-offset: 3px; }
-.plate-band { display: block; padding: 0.05rem 0; text-align: center; background: var(--plate); color: #fff; font: 600 0.8rem/1.4 var(--display); letter-spacing: 0.25em; text-indent: 0.25em; }
-.plate-input { padding: 0.1rem 0.5rem 0.2rem; text-align: center; font: 700 2.6rem/1.15 var(--display); letter-spacing: 0.08em; text-transform: uppercase; border: 0; border-radius: 0; background: transparent; }
+.plate-band { display: grid; align-content: center; justify-items: center; flex: none; width: 2.6rem; background: var(--plate); color: #fff; font: 700 1.1rem/1 var(--display); }
+.plate-band svg { width: 1.6rem; height: 1.6rem; margin-bottom: 0.15rem; fill: #fc0; }
+.plate-input { flex: 1; min-width: 0; padding: 0.1rem 0.5rem 0.2rem; text-align: center; font: 700 2.4rem/1.15 var(--display); letter-spacing: 0.04em; text-transform: uppercase; border: 0; border-radius: 0; background: transparent; }
 .plate-input:focus-visible { outline: none; }
 .plate-input::placeholder { color: #c3c8d6; }
 

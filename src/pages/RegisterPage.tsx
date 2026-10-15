@@ -10,11 +10,11 @@ type Props = ReturnType<typeof useAppState>
 
 const EMPTY: RegisterInput = { url: '', plate: '', vin: '', renavam: '', make: '', model: '', year: '', proofFileName: '' }
 
-/** Dados de exemplo: o mesmo Civic da demonstração, agora anunciado na Webmotors. */
+/** Dados de exemplo: o mesmo Civic da demonstração, agora anunciado no mobile.de. */
 const DEMO: RegisterInput = {
-  url: 'https://www.webmotors.com.br/comprar/honda/civic/2-0-exl/4-portas/2019/47712345',
-  plate: 'RIO2A18',
-  vin: '93HFC2650KZ100001',
+  url: 'https://www.mobile.de/auto-inserat/honda-civic-2-0-exl/447712345.html',
+  plate: 'B KM 4821',
+  vin: 'JHMFC2650KS100001',
   renavam: '0123456789' + renavamCheckDigit('0123456789'),
   make: 'Honda',
   model: 'Civic EXL',
@@ -87,7 +87,7 @@ export function RegisterPage({ state, update }: Props) {
       <form className="form" onSubmit={onSubmit} noValidate>
         <label className="field">
           {t('register.url')}
-          <input type="url" inputMode="url" value={form.url} onChange={(e) => set('url')(e.target.value)} placeholder="https://www.olx.com.br/..." />
+          <input type="url" inputMode="url" value={form.url} onChange={(e) => set('url')(e.target.value)} placeholder="https://www.kleinanzeigen.de/..." />
         </label>
         <div className="grid-3">
           <label className="field">
