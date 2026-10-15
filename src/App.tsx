@@ -6,6 +6,7 @@ import { ActivityPage } from './pages/ActivityPage'
 import { CheckPage } from './pages/CheckPage'
 import { HowPage } from './pages/HowPage'
 import { LoginPage } from './pages/LoginPage'
+import { MarketplacePage } from './pages/MarketplacePage'
 import { RegisterPage } from './pages/RegisterPage'
 
 type Route = 'check' | 'register' | 'how' | 'activity'
@@ -30,14 +31,22 @@ function readRoute(role: Role | null): Route {
   return (routes as string[]).includes(hash) ? (hash as Route) : routes[0]
 }
 
+/** Página-cópia do marketplace: `#/listing/{checkId}`, aberta sem login. */
+function readListingId(): string | null {
+  const m = window.location.hash.match(/^#\/listing\/([\w-]+)$/)
+  return m ? m[1] : null
+}
+
 export function App() {
   const { t, lang, setLang } = useI18n()
   const [role, setRole] = useState<Role | null>(loadRole)
   const [route, setRoute] = useState<Route>(() => readRoute(role))
+  const [listingId, setListingId] = useState<string | null>(readListingId)
   const app = useAppState()
 
   useEffect(() => {
     const onHash = () => {
+      setListingId(readListingId())
       setRoute(readRoute(role))
       window.scrollTo(0, 0)
     }
@@ -58,6 +67,8 @@ export function App() {
     setRole(null)
     window.location.hash = ''
   }
+
+  if (listingId) return <MarketplacePage state={app.state} checkId={listingId} />
 
   return (
     <div className="app">

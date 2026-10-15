@@ -1,0 +1,49 @@
+/* Página-cópia do marketplace: visual próprio, independente do resto do site. */
+.mp { --mp-bg: #f0f2f5; --mp-card: #fff; --mp-text: #1c1e21; --mp-sub: #65676b; --mp-blue: #1b74e4; --mp-line: #dadde1;
+  min-height: 100vh; background: var(--mp-bg); color: var(--mp-text); font: 400 15px/1.35 system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
+.mp a { color: var(--mp-blue); }
+.mp-demo { display: flex; flex-wrap: wrap; gap: 0.25rem 1rem; justify-content: space-between; padding: 0.5rem 1rem; background: #14203b; color: #fff; font-size: 0.8125rem; }
+.mp-demo a { color: #fff; font-weight: 600; }
+.mp-top { display: flex; align-items: center; gap: 0.6rem; padding: 0.6rem 1rem; background: var(--mp-card); border-bottom: 1px solid var(--mp-line); }
+.mp-top strong { font-size: 1.25rem; }
+.mp-logo { width: 2.1rem; height: 2.1rem; border-radius: 50%; background: var(--mp-blue); }
+.mp-crumb { margin-left: 0.5rem; color: var(--mp-sub); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mp-layout { display: grid; grid-template-columns: minmax(0, 1fr) 24rem; align-items: start; }
+.mp-gallery { padding: 1.25rem 1rem; display: grid; gap: 0.75rem; justify-items: center; }
+.mp-stage { position: relative; width: min(100%, 52rem); aspect-ratio: 800 / 520; border-radius: 10px; overflow: hidden; background: #000; }
+.mp .car-art { display: block; width: 100%; height: 100%; }
+.mp-arrow { position: absolute; top: 50%; translate: 0 -50%; width: 2.5rem; height: 2.5rem; border: 0; border-radius: 50%; background: rgba(255,255,255,0.9); color: var(--mp-text); font-size: 1.75rem; line-height: 1; cursor: pointer; }
+.mp-prev { left: 0.75rem; } .mp-next { right: 0.75rem; }
+.mp-counter { position: absolute; right: 0.75rem; bottom: 0.6rem; padding: 0.15rem 0.5rem; border-radius: 1rem; background: rgba(0,0,0,0.55); color: #fff; font-size: 0.8125rem; }
+.mp-thumbs { display: flex; gap: 0.5rem; }
+.mp-thumbs button { width: 4.5rem; aspect-ratio: 800 / 520; padding: 0; border: 2px solid transparent; border-radius: 6px; overflow: hidden; background: none; cursor: pointer; opacity: 0.75; }
+.mp-thumbs button.on { border-color: var(--mp-blue); opacity: 1; }
+.mp-note { margin: 0; color: var(--mp-sub); font-size: 0.8125rem; }
+.mp-info { background: var(--mp-card); padding: 1.25rem 1.25rem 2.5rem; min-height: calc(100vh - 5rem); box-shadow: -1px 0 0 var(--mp-line); }
+.mp h1 { margin: 0; font: 700 1.5rem/1.2 system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; letter-spacing: 0; }
+.mp h2 { margin: 1.4rem 0 0.5rem; font: 700 1.1rem/1.2 system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; letter-spacing: 0; }
+.mp h3 { margin: 1rem 0 0.4rem; font: 600 0.95rem/1.2 system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
+.mp-price { margin: 0.35rem 0; font-size: 1.25rem; }
+.mp-meta { margin: 0; color: var(--mp-sub); font-size: 0.8125rem; }
+.mp-actions { display: flex; gap: 0.5rem; margin: 1rem 0 0.25rem; }
+.mp-btn { flex: 1; padding: 0.6rem 0.5rem; border: 0; border-radius: 6px; background: #e4e6eb; color: var(--mp-text); font: 600 0.9375rem system-ui, sans-serif; cursor: pointer; }
+.mp-btn-primary { flex: 2; background: var(--mp-blue); color: #fff; }
+.mp-facts, .mp-features { margin: 0; padding: 0; list-style: none; display: grid; gap: 0.5rem; }
+.mp-facts li { padding-left: 1.5rem; position: relative; }
+.mp-facts li::before { content: ''; position: absolute; left: 0.25rem; top: 0.35em; width: 0.6rem; height: 0.6rem; border-radius: 50%; background: var(--mp-sub); opacity: 0.7; }
+.mp-features li { padding-left: 1.5rem; position: relative; color: var(--mp-text); }
+.mp-features li::before { content: '✓'; position: absolute; left: 0.2rem; color: var(--mp-sub); }
+.mp-desc { margin: 0; }
+.mp-map { margin-top: 1.4rem; height: 8rem; border-radius: 8px; overflow: hidden; }
+.mp-map svg { display: block; width: 100%; height: 100%; }
+.mp-seller { display: flex; align-items: center; gap: 0.75rem; }
+.mp-seller div { display: grid; }
+.mp-seller span:not(.mp-avatar) { color: var(--mp-sub); font-size: 0.8125rem; }
+.mp-avatar { display: grid; place-items: center; width: 2.75rem; height: 2.75rem; border-radius: 50%; background: #8a9bb8; color: #fff; font-weight: 700; font-size: 1.1rem; }
+.mp-empty { display: grid; gap: 0.5rem; justify-items: center; padding: 4rem 1rem; }
+@media (max-width: 52rem) {
+  .mp-layout { grid-template-columns: 1fr; }
+  .mp-info { min-height: 0; box-shadow: 0 -1px 0 var(--mp-line); }
+  .mp-gallery { padding: 0.75rem 0; }
+  .mp-stage { border-radius: 0; }
+}
