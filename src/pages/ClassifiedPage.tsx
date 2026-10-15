@@ -7,7 +7,7 @@ import { listedWhen } from './MarketplacePage'
 import '../marketplace.css'
 import '../classified.css'
 
-/** Cópia fictícia de um anúncio de site de classificados (OLX, Webmotors, Mercado Livre...). */
+/** Cópia fictícia de um anúncio de site de classificados (OLX, Standvirtual, Leboncoin, Kleinanzeigen...). */
 export function ClassifiedPage({ listing: l }: { listing: Listing }) {
   const { t, locale } = useI18n()
   const theme = siteTheme(l.site)
