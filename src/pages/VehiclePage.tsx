@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { CarArt, type CarView } from '../components/CarArt'
 import { PhotoCredit, VehicleImage } from '../components/VehicleImage'
 import { useI18n } from '../i18n'
@@ -14,6 +14,8 @@ export function VehiclePage({ state, checkId }: { state: AppState; checkId: stri
   const { t, locale } = useI18n()
   const [index, setIndex] = useState(0)
   const [sent, setSent] = useState(false)
+  const [draft, setDraft] = useState('')
+  const dialog = useRef<HTMLDialogElement>(null)
   const l = state.listings.find((x) => x.checkId === checkId)
 
   if (!l) {
@@ -98,7 +100,7 @@ export function VehiclePage({ state, checkId }: { state: AppState; checkId: stri
             {sent ? (
               <p className="vehicle-sent" role="status">{t('vp.sent', { name: d.seller })}</p>
             ) : (
-              <button type="button" className="button button-primary" onClick={() => setSent(true)} disabled={l.status === 'sold'}>{t('vp.contact')}</button>
+              <button type="button" className="button button-primary" onClick={() => { setDraft(t('vp.draft', { vehicle: title })); dialog.current?.showModal() }} disabled={l.status === 'sold'}>{t('vp.contact')}</button>
             )}
             <div className="vehicle-seller">
               <span className="vehicle-avatar" aria-hidden="true">{d.seller.charAt(0)}</span>
@@ -107,6 +109,20 @@ export function VehiclePage({ state, checkId }: { state: AppState; checkId: stri
           </div>
         </aside>
       </div>
+      <dialog ref={dialog} className="vehicle-dialog" aria-labelledby="vehicle-dialog-title">
+        <form method="dialog" onSubmit={() => setSent(true)}>
+          <h2 id="vehicle-dialog-title">{t('vp.dialogTitle', { name: d.seller })}</h2>
+          <p className="muted">{title} · {price}</p>
+          <label className="field">
+            {t('vp.message')}
+            <textarea rows={5} value={draft} onChange={(e) => setDraft(e.target.value)} required />
+          </label>
+          <div className="vehicle-dialog-actions">
+            <button type="button" className="button" onClick={() => dialog.current?.close()}>{t('vp.cancel')}</button>
+            <button type="submit" className="button button-primary">{t('vp.send')}</button>
+          </div>
+        </form>
+      </dialog>
     </section>
   )
 }
