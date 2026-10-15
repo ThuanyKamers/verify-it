@@ -202,6 +202,46 @@ input[type='file']::file-selector-button { margin-right: 0.8rem; padding: 0.35re
 .figures > div { display: flex; flex-direction: column-reverse; justify-content: flex-end; gap: 0.25rem; padding-top: 0.75rem; border-top: 2px solid var(--rule); }
 .figures dd { margin: 0; font: 700 3.25rem/1 var(--display); }
 .figures dt { color: var(--ink-2); font-size: 1rem; max-width: 16rem; }
+.figures .source, .chart-note .source { display: block; margin-top: 0.2rem; font-size: 0.85rem; }
+
+/* Gráficos da página Como funciona. Cores validadas para daltonismo e contraste
+   com o validador de paleta (série 1 azul, série 2 laranja), sobre o fundo --sheet. */
+:root { --series-1: #2f55c9; --series-2: #d2691e; }
+
+.chart { margin: 2.5rem 0 0; padding: 1.25rem 1.25rem 1rem; background: var(--sheet); border: 1px solid var(--rule); }
+.chart h3 { font-size: 1.1rem; }
+.chart-note { margin-top: 0.75rem; color: var(--ink-2); font-size: 0.9rem; }
+.live-note { margin-top: 1rem; max-width: 42rem; }
+
+.bars { margin: 1rem 0 0; padding: 0; list-style: none; display: grid; gap: 0.5rem; }
+.bars li { position: relative; display: grid; grid-template-columns: minmax(8rem, 15rem) 1fr 3.5rem; align-items: center; gap: 0.75rem; font-size: 1rem; }
+.bar-track { height: 1rem; }
+.bar { display: block; height: 100%; min-width: 2px; background: var(--series-1); border-radius: 0 4px 4px 0; }
+.bars li:hover .bar, .bars li:focus-visible .bar { background: var(--plate); }
+.bar-value { font-weight: 600; font-variant-numeric: tabular-nums; text-align: right; }
+
+.survey { display: grid; gap: 0 2rem; grid-template-columns: 2fr 1fr; align-items: end; }
+.survey .chart { margin-top: 1.5rem; }
+.survey-tile > div { border-top-color: var(--series-1); }
+.stack { display: flex; gap: 2px; margin-top: 1rem; height: 2.75rem; }
+.seg { position: relative; display: flex; align-items: center; padding: 0 0.6rem; min-width: 3.5rem; color: #fff; font: 700 1.25rem/1 var(--display); }
+.seg-1 { background: var(--series-1); border-radius: 4px 0 0 4px; }
+.seg-2 { background: var(--series-2); border-radius: 0 4px 4px 0; }
+.legend { margin: 0.75rem 0 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 0.25rem 1.5rem; font-size: 0.95rem; }
+.legend li { display: flex; align-items: center; gap: 0.4rem; }
+.legend .key { width: 0.85rem; height: 0.85rem; border-radius: 2px; }
+
+[data-tip]:hover::after, [data-tip]:focus-visible::after {
+  content: attr(data-tip); position: absolute; z-index: 2; left: 50%; bottom: calc(100% + 6px); transform: translateX(-50%);
+  padding: 0.3rem 0.55rem; background: var(--ink); color: #fff; font: 500 0.85rem/1.3 var(--text); white-space: nowrap; border-radius: 4px; pointer-events: none;
+}
+
+@media (max-width: 40rem) {
+  .survey { grid-template-columns: 1fr; }
+  .survey-tile { margin-top: 1.5rem; }
+  .bars li { grid-template-columns: 1fr 3rem; row-gap: 0.2rem; }
+  .bar-label { grid-column: 1 / -1; }
+}
 
 /* Atividade */
 
