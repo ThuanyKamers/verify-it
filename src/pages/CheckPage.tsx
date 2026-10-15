@@ -67,6 +67,13 @@ export function CheckPage({ state, update }: Props) {
     tryExample(pool[i].url)
   }
 
+  /** Leva o comprador ao campo da placa para refazer a consulta. */
+  function focusPlate() {
+    const input = document.querySelector<HTMLInputElement>('.check-form .plate-input')
+    input?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    input?.focus({ preventScroll: true })
+  }
+
   function report() {
     update((s) => {
       const next = addReport(s, url)
@@ -148,20 +155,45 @@ export function CheckPage({ state, update }: Props) {
             </div>
           )}
 
-          {risky && (
+          {result.status === 'scam' && (
             <>
-              <div className="report-part">
-                <h3>{t('result.tips.title')}</h3>
-                <ul className="plain-list">
-                  <li>{t('result.tips.1')}</li>
-                  <li>{t('result.tips.2')}</li>
-                  <li>{t('result.tips.3')}</li>
-                </ul>
+              <div className="report-part report-steps">
+                <h3>{t('result.scam.steps')}</h3>
+                <ol>
+                  <li>{t('result.scam.step1')}</li>
+                  <li>{t('result.scam.step2')}</li>
+                  <li>{t(official.length ? 'result.scam.step3' : 'result.scam.step3none')}</li>
+                </ol>
               </div>
               {reported ? (
                 <p className="confirmation">{t('result.reported')}</p>
               ) : (
-                <button type="button" className="button button-danger" onClick={report}>{t('result.report')}</button>
+                <button type="button" className="button button-danger-solid" onClick={report}>{t('result.report')}</button>
+              )}
+            </>
+          )}
+
+          {result.status === 'unverified' && (
+            <>
+              <div className="report-part">
+                <h3>{t('result.unverified.how')}</h3>
+                <ul className="plain-list">
+                  <li>{t('result.unverified.how1')}</li>
+                  {!plate.trim() && <li>{t('result.unverified.how2')}</li>}
+                  <li>{t('result.tips.1')}</li>
+                  <li>{t('result.tips.2')}</li>
+                </ul>
+                {!plate.trim() && (
+                  <button type="button" className="button" onClick={focusPlate}>{t('result.unverified.withPlate')}</button>
+                )}
+              </div>
+              {reported ? (
+                <p className="confirmation">{t('result.reported')}</p>
+              ) : (
+                <p className="report-quiet">
+                  {t('result.unverified.suspicious')}{' '}
+                  <button type="button" className="text-button" onClick={report}>{t('result.report')}</button>
+                </p>
               )}
             </>
           )}
