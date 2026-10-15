@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { Leaders } from '../components/Leaders'
 import { PlateInput } from '../components/PlateInput'
+import { listingHref } from '../lib/mockListing'
 import { useI18n, type MessageKey } from '../i18n'
 import { DEMO_URLS } from '../lib/seed'
 import type { useAppState } from '../lib/store'
@@ -101,7 +102,7 @@ export function CheckPage({ state, update }: Props) {
                 ]}
               />
               {result.reportCount > 0 && <p className="warning">{t('result.reportsWarning', { n: result.reportCount })}</p>}
-              <a className="button button-primary" href={result.listing.url} target="_blank" rel="noopener noreferrer">{t('result.openListing')}</a>
+              <a className="button button-primary" href={listingHref(result.listing)} target="_blank" rel="noopener noreferrer">{t('result.openListing')}</a>
             </>
           )}
 
@@ -111,7 +112,7 @@ export function CheckPage({ state, update }: Props) {
               <ul className="plain-list">
                 {result.related.map((l) => (
                   <li key={l.checkId}>
-                    <a href={l.url} target="_blank" rel="noopener noreferrer">{l.site}</a>, {l.make} {l.model} {l.year}
+                    <a href={listingHref(l)} target="_blank" rel="noopener noreferrer">{l.site}</a>, {l.make} {l.model} {l.year}
                   </li>
                 ))}
               </ul>

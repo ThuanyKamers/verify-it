@@ -1,5 +1,6 @@
 import { useI18n, type MessageKey } from '../i18n'
 import type { useAppState } from '../lib/store'
+import { listingHref } from '../lib/mockListing'
 import { maskPlate } from '../lib/validation'
 import { appendLog, markSold, type LogEntry } from '../lib/verify'
 
@@ -44,7 +45,7 @@ export function ActivityPage({ state, update, reset }: Props) {
                 <td><code>{l.checkId}</code></td>
                 <td>{l.make} {l.model} {l.year}</td>
                 <td>{maskPlate(l.plate)}</td>
-                <td><a href={l.url} target="_blank" rel="noopener noreferrer">{l.site}</a></td>
+                <td><a href={listingHref(l)} target="_blank" rel="noopener noreferrer">{l.site}</a></td>
                 <td><span className={`badge ${l.status}`}>{t(`activity.status.${l.status}` as MessageKey)}</span></td>
                 <td>
                   {l.status === 'active' && (
