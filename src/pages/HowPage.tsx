@@ -6,6 +6,7 @@ const STEPS = ['seller', 'check', 'buyer'] as const
 // Não há API pública em tempo real; quando sair uma edição nova, atualize aqui.
 const SOURCES = {
   olx2023: { label: 'OLX, 2023', url: 'https://www.autoo.com.br/mais-de-90-mil-golpes-em-compra-e-venda-de-carros-foram-aplicados-em-2023/' },
+  olx2023kinds: { label: 'OLX, 2023', url: 'https://olhardigital.com.br/2024/05/24/carros-e-tecnologia/golpes-envolvendo-carros-tiraram-quase-r-3-bilhoes-de-brasileiros-em-2023/' },
   olx2024: { label: 'OLX e Fenauto, 2024', url: 'https://mecanicaonline.com.br/2024/12/golpes-em-revendas-online-de-veiculos-geram-prejuizo-de-r-25-bilhoes-em-2024' },
   lloyds: { label: 'Lloyds Bank, 2023', url: 'https://www.itv.com/news/2023-09-25/vehicle-scam-reports-surged-by-74-in-the-first-half-of-2023-says-lloyds-bank' },
 }
@@ -77,8 +78,7 @@ export function HowPage() {
 
       <h2 className="section-title">{t('how.stats.title')}</h2>
       <dl className="figures">
-        <div><dt>{t('how.stats.loss2023')} <SourceLink source={SOURCES.olx2023} /></dt><dd>{brl(2.7e9)}</dd></div>
-        <div><dt>{t('how.stats.count2023')} <SourceLink source={SOURCES.olx2023} /></dt><dd>{compact}</dd></div>
+        <div><dt>{t('how.stats.loss2023', { count: compact })} <SourceLink source={SOURCES.olx2023} /></dt><dd>{brl(2.7e9)}</dd></div>
         <div><dt>{t('how.stats.loss2024')} <SourceLink source={SOURCES.olx2024} /></dt><dd>{brl(2.5e9)}</dd></div>
         <div><dt>{t('how.stats.uk')} <SourceLink source={SOURCES.lloyds} /></dt><dd>+74%</dd></div>
       </dl>
@@ -86,7 +86,7 @@ export function HowPage() {
       <figure className="chart">
         <figcaption><h3>{t('how.kind.title')}</h3></figcaption>
         <Bars rows={KINDS.map(([k, v]) => [t(k), v])} max={100} format={(v) => pct(v / 100)} describe={(v) => pct(v / 100)} />
-        <p className="chart-note">{t('how.kind.note')} <SourceLink source={SOURCES.olx2023} /></p>
+        <p className="chart-note">{t('how.kind.note')} <SourceLink source={SOURCES.olx2023kinds} /></p>
       </figure>
       <p className="muted small live-note">{t('how.stats.live')}</p>
 
