@@ -1,6 +1,8 @@
 /* Cópias de sites de classificados: a cor da marca muda por site, o resto é comum. */
 .cl { --cl-head: #fff; --cl-head-text: #6e0ad6; --cl-accent: #f28000; --cl-accent-text: #fff; --cl-link: #6e0ad6; background: #f4f4f4; }
 .cl[data-site='kleinanzeigen'] { --cl-head: #fff; --cl-head-text: #326916; --cl-accent: #5da813; --cl-accent-text: #102a05; --cl-link: #326916; }
+.cl[data-site='mobilede'] { --cl-head: #fff; --cl-head-text: #f26c00; --cl-accent: #f26c00; --cl-accent-text: #1a1a1a; --cl-link: #0c4a8a; }
+.cl[data-site='autoscout24'] { --cl-head: #333; --cl-head-text: #f5f200; --cl-accent: #f5f200; --cl-accent-text: #1a1a1a; --cl-link: #1d5ea8; }
 .cl[data-site='standvirtual'] { --cl-head: #fff; --cl-head-text: #002f34; --cl-accent: #002f34; --cl-link: #002f34; }
 .cl[data-site='leboncoin'] { --cl-head: #fff; --cl-head-text: #ff6e14; --cl-accent: #ff6e14; --cl-accent-text: #1a1a1a; --cl-link: #c4510a; }
 .cl[data-site='olx'] { --cl-head: #fff; --cl-head-text: #6e0ad6; --cl-accent: #f28000; --cl-accent-text: #1a1a1a; --cl-link: #6e0ad6; }

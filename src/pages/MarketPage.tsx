@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { VehicleImage } from '../components/VehicleImage'
 import { useI18n } from '../i18n'
-import { describe, listingHref, mockDetails, type MockDetails } from '../lib/mockListing'
+import { describe, listingHref, mockDetails, siteLabel, type MockDetails } from '../lib/mockListing'
 import { CITIES, distanceKm, findCity } from '../lib/places'
 import { photoFor, vehicleKind, type VehicleKind, type VehiclePhoto } from '../lib/photos'
 import type { AppState, Listing } from '../lib/verify'
@@ -10,7 +10,8 @@ import '../market.css'
 interface Vehicle {
   listing: Listing
   details: MockDetails
-  sites: string[]
+  /** Um anúncio por site, cada um com a sua página-cópia. */
+  sites: Listing[]
   kind: VehicleKind
   photo?: VehiclePhoto
 }
@@ -28,7 +29,8 @@ function vehicles(state: AppState): Vehicle[] {
   }
   return [...byPlate.values()].map((group) => {
     const listing = group.reduce((a, b) => (a.createdAt <= b.createdAt ? a : b))
-    return { listing, details: mockDetails(listing), sites: [...new Set(group.map((l) => l.site))], kind: vehicleKind(listing), photo: photoFor(listing) }
+    const sites = [...group].sort((a, b) => siteLabel(a.site).localeCompare(siteLabel(b.site)))
+    return { listing, details: mockDetails(listing), sites, kind: vehicleKind(listing), photo: photoFor(listing) }
   })
 }
 
@@ -140,8 +142,14 @@ export function MarketPage({ state }: { state: AppState }) {
                 <p className="car-desc">{describe(d, t)}</p>
                 <p className="car-price">{euro.format(d.price)}</p>
                 <p className="car-seller">{t('mk.seller', { name: d.seller })}</p>
-                {sites.length > 1 && <p className="car-sites">{t('mk.alsoOn', { sites: sites.join(', ') })}</p>}
-                <a className="button button-primary" href={listingHref(l)} target="_blank" rel="noopener noreferrer">{t('mk.view')}</a>
+                <h3 className="car-sites-title" id={`sites-${l.checkId}`}>{t('mk.listedOn')}</h3>
+                <ul className="car-sites" aria-labelledby={`sites-${l.checkId}`}>
+                  {sites.map((s) => (
+                    <li key={s.checkId}>
+                      <a href={listingHref(s)} target="_blank" rel="noopener noreferrer">{siteLabel(s.site)}</a>
+                    </li>
+                  ))}
+                </ul>
               </div>
             </li>
           ))}
