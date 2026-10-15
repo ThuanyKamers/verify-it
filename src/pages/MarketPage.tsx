@@ -131,7 +131,6 @@ export function MarketPage({ state }: { state: AppState }) {
             <li key={l.plate} className="car-card">
               <a className="car-photo" href={listingHref(l)} target="_blank" rel="noopener noreferrer" aria-label={`${t('mk.view')}: ${l.make} ${l.model}`}>
                 <VehicleImage photo={photo} alt={`${l.make} ${l.model}`} body={d.bodyColor} sky={skyOf(l.plate)} />
-                <span className="car-badge">{t('mk.verified')}</span>
               </a>
               <div className="car-body">
                 <h2>{l.make} {l.model}</h2>
