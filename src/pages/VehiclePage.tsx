@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { CarArt, type CarView } from '../components/CarArt'
 import { PhotoCredit, VehicleImage } from '../components/VehicleImage'
-import { useI18n, type MessageKey } from '../i18n'
+import { useI18n } from '../i18n'
 import { describe, mockDetails } from '../lib/mockListing'
 import { photoFor, vehicleKind } from '../lib/photos'
 import { maskPlate } from '../lib/validation'
@@ -9,14 +9,13 @@ import type { AppState } from '../lib/verify'
 
 const VIEWS: CarView[] = ['side', 'front', 'rear', 'cabin']
 
-/** Etapas de verificação que o dono cumpriu ao cadastrar o veículo. */
-const STEPS: MessageKey[] = ['vp.step.plate', 'vp.step.docs', 'vp.step.vin', 'vp.step.selfie']
-
 /** Página do anúncio dentro do marketplace do Verify It: `#/market/{checkId}`. */
 export function VehiclePage({ state, checkId }: { state: AppState; checkId: string }) {
   const { t, locale } = useI18n()
   const [index, setIndex] = useState(0)
   const [sent, setSent] = useState(false)
+  const [draft, setDraft] = useState('')
+  const dialog = useRef<HTMLDialogElement>(null)
   const l = state.listings.find((x) => x.checkId === checkId)
 
   if (!l) {
@@ -34,7 +33,6 @@ export function VehiclePage({ state, checkId }: { state: AppState; checkId: stri
   const sky = [...l.plate].reduce((sum, c) => sum + c.charCodeAt(0), 0) % 4
   const price = new Intl.NumberFormat(locale, { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(d.price)
   const km = `${new Intl.NumberFormat(locale).format(d.km)} km`
-  const since = new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(l.createdAt))
   const title = `${l.make} ${l.model}`
 
   const rows: [string, string][] = [
@@ -102,23 +100,29 @@ export function VehiclePage({ state, checkId }: { state: AppState; checkId: stri
             {sent ? (
               <p className="vehicle-sent" role="status">{t('vp.sent', { name: d.seller })}</p>
             ) : (
-              <button type="button" className="button button-primary" onClick={() => setSent(true)} disabled={l.status === 'sold'}>{t('vp.contact')}</button>
+              <button type="button" className="button button-primary" onClick={() => { setDraft(t('vp.draft', { vehicle: title })); dialog.current?.showModal() }} disabled={l.status === 'sold'}>{t('vp.contact')}</button>
             )}
             <div className="vehicle-seller">
               <span className="vehicle-avatar" aria-hidden="true">{d.seller.charAt(0)}</span>
               <span><strong>{d.seller}</strong><br /><span className="muted">{t('vp.owner')}</span></span>
             </div>
           </div>
-
-          <div className="vehicle-card vehicle-verified">
-            <p className="vehicle-seal"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7" /></svg>{t('vp.verified')}</p>
-            <ul>
-              {STEPS.map((s) => <li key={s}>{t(s)}</li>)}
-            </ul>
-            <p className="small muted">{t('vp.code', { code: l.checkId, date: since })}</p>
-          </div>
         </aside>
       </div>
+      <dialog ref={dialog} className="vehicle-dialog" aria-labelledby="vehicle-dialog-title">
+        <form method="dialog" onSubmit={() => setSent(true)}>
+          <h2 id="vehicle-dialog-title">{t('vp.dialogTitle', { name: d.seller })}</h2>
+          <p className="muted">{title} · {price}</p>
+          <label className="field">
+            {t('vp.message')}
+            <textarea rows={5} value={draft} onChange={(e) => setDraft(e.target.value)} required />
+          </label>
+          <div className="vehicle-dialog-actions">
+            <button type="button" className="button" onClick={() => dialog.current?.close()}>{t('vp.cancel')}</button>
+            <button type="submit" className="button button-primary">{t('vp.send')}</button>
+          </div>
+        </form>
+      </dialog>
     </section>
   )
 }
