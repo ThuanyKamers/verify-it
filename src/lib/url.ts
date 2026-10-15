@@ -32,5 +32,8 @@ export function parseListingUrl(input: string): ParsedListingUrl | null {
   const query = params.length ? `?${new URLSearchParams(params).toString()}` : ''
   const path = url.pathname.replace(/\/+$/, '') || '/'
 
-  return { key: `${site}${path}${query}`, site }
+  // Sites de página única (como o marketplace do Verify It) guardam a rota depois do "#/".
+  const route = url.hash.startsWith('#/') ? url.hash.replace(/\/+$/, '') : ''
+
+  return { key: `${site}${path}${query}${route}`, site }
 }

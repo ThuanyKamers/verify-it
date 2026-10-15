@@ -59,9 +59,18 @@ export function describe(d: MockDetails, t: (key: MessageKey) => string): string
   return d.descriptionText ?? t(d.description)
 }
 
-export type SiteTheme = 'facebook' | 'kleinanzeigen' | 'mobilede' | 'autoscout24' | 'standvirtual' | 'leboncoin' | 'olx' | 'webmotors' | 'mercadolivre' | 'generic'
+export type SiteTheme = 'verifyit' | 'facebook' | 'kleinanzeigen' | 'mobilede' | 'autoscout24' | 'standvirtual' | 'leboncoin' | 'olx' | 'webmotors' | 'mercadolivre' | 'generic'
+
+/** Domínio do marketplace do próprio Verify It (GitHub Pages). */
+export const MARKET_SITE = 'thuanykamers.github.io'
+
+/** Link público de um anúncio no marketplace do Verify It. */
+export function marketUrl(checkId: string): string {
+  return `https://${MARKET_SITE}/verify-it/#/market/${checkId}`
+}
 
 export const SITE_NAMES: Record<SiteTheme, string> = {
+  verifyit: 'Verify It Marketplace',
   facebook: 'Marketplace',
   kleinanzeigen: 'Kleinanzeigen',
   mobilede: 'mobile.de',
@@ -75,6 +84,7 @@ export const SITE_NAMES: Record<SiteTheme, string> = {
 }
 
 export function siteTheme(site: string): SiteTheme {
+  if (site === MARKET_SITE) return 'verifyit'
   if (site.includes('facebook')) return 'facebook'
   if (site.includes('kleinanzeigen')) return 'kleinanzeigen'
   if (site.includes('mobile.de')) return 'mobilede'
@@ -87,6 +97,11 @@ export function siteTheme(site: string): SiteTheme {
   return 'generic'
 }
 
+/** Domínio como aparece nos resultados; o marketplace do Verify It aparece pelo nome. */
+export function displaySite(site: string): string {
+  return siteTheme(site) === 'verifyit' ? SITE_NAMES.verifyit : site
+}
+
 /** Nome do site como o comprador conhece (ex.: "Mercado Livre" para carro.mercadolivre.com.br). */
 export function siteLabel(site: string): string {
   const theme = siteTheme(site)
@@ -97,7 +112,11 @@ export function siteLabel(site: string): string {
   return theme === 'generic' ? site : SITE_NAMES[theme]
 }
 
-/** Endereço da página-cópia do anúncio: todo site tem uma cópia própria dentro do protótipo. */
-export function listingHref(l: Pick<Listing, 'checkId'>): string {
-  return `${import.meta.env.BASE_URL}#/listing/${l.checkId}`
+/**
+ * Endereço do anúncio dentro do protótipo: os do marketplace do Verify It abrem a página do próprio marketplace;
+ * os dos outros sites abrem a cópia daquele site.
+ */
+export function listingHref(l: Pick<Listing, 'checkId' | 'site'>): string {
+  const route = siteTheme(l.site) === 'verifyit' ? 'market' : 'listing'
+  return `${import.meta.env.BASE_URL}#/${route}/${l.checkId}`
 }

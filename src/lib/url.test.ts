@@ -17,4 +17,10 @@ describe('parseListingUrl', () => {
     expect(parseListingUrl('')).toBeNull()
     expect(parseListingUrl('não é um link')).toBeNull()
   })
+  it('keeps the route of single-page sites such as the Verify It marketplace', () => {
+    const a = parseListingUrl('https://thuanykamers.github.io/verify-it/#/market/VI-M2B7QX')
+    const b = parseListingUrl('https://thuanykamers.github.io/verify-it/#/market/VI-M5T3KD')
+    expect(a?.key).toBe('thuanykamers.github.io/verify-it#/market/VI-M2B7QX')
+    expect(a?.key).not.toBe(b?.key)
+  })
 })
