@@ -162,7 +162,13 @@ input[type='file']::file-selector-button { margin-right: 0.8rem; padding: 0.35re
 
 .report { --tone: var(--ink); position: relative; margin-top: 2.5rem; padding: 2rem 1.5rem 2rem 2rem; background: var(--sheet); border: 2px solid var(--ink); border-left: 12px solid var(--tone); }
 .report-verified { --tone: var(--ok); }
-.report-scam { --tone: var(--bad); }
+.report-scam { --tone: var(--bad); background: var(--bad-wash); border-color: var(--bad); }
+.report-scam .report-body { color: var(--bad); }
+.report-steps ol { display: grid; gap: 0.5rem; margin: 0.6rem 0 0; padding-left: 1.4rem; font-weight: 600; }
+.report-steps li::marker { color: var(--bad); font-weight: 700; }
+.button-danger-solid { color: #fff; background: var(--bad); border-color: var(--bad); }
+.button-danger-solid:hover { background: #9d1d23; border-color: #9d1d23; }
+.report-quiet { margin-top: 1.25rem; color: var(--ink-2); }
 .report-unverified { --tone: var(--warn); }
 .report-invalid { --tone: var(--ink-2); }
 .report-body { max-width: 30rem; font: 600 clamp(1.6rem, 4vw, 2.1rem)/1.15 var(--display); }
