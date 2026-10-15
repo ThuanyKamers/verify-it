@@ -21,7 +21,11 @@ On opening the site, the person goes through a simulated login and picks **I'm a
 
 The full flow is in [docs/fluxo.png](docs/fluxo.png).
 
-For Facebook listings, the "Go to the original listing" button opens a demo copy of a marketplace page built from the registered data (with illustrations instead of photos).
+For Facebook listings, the "Go to the original listing" button opens a demo copy of a marketplace page built from the registered data (with real photos of the sample vehicles, or drawn illustrations when no photo matches).
+
+## Vehicle photos
+
+The sample cars and motorcycles use free-licence photos from Wikimedia Commons, stored in `public/vehicles/` so the site never hotlinks. Each photo, its author and its licence are listed in `src/lib/photos.ts`, and the credits are shown next to the photo and in the marketplace footer. Vehicles without a matching photo fall back to the drawn illustration.
 
 ## Languages
 

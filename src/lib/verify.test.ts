@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { DEMO_URLS, seedState } from './seed'
+import { DEMO_DOCUMENTS, DEMO_URLS, seedState } from './seed'
 import { renavamCheckDigit } from './validation'
 import { addReport, check, markSold, register, type AppState, type RegisterInput } from './verify'
 
@@ -11,7 +11,7 @@ const civic: RegisterInput = {
   make: 'Honda',
   model: 'Civic EXL',
   year: '2019',
-  proofFileName: 'crlv.pdf',
+  documents: DEMO_DOCUMENTS,
 }
 
 const empty: AppState = { listings: [], reports: [], log: [] }
@@ -41,9 +41,17 @@ describe('cadastro do vendedor', () => {
   })
 
   it('lista todos os erros de formato de uma vez', () => {
-    const res = register(empty, { ...civic, plate: 'X', vin: 'Y', renavam: '1', proofFileName: '' })
+    const res = register(empty, { ...civic, plate: 'X', vin: 'Y', renavam: '1', documents: {} })
     expect(res.ok).toBe(false)
-    if (!res.ok) expect(res.errors).toEqual(['invalidPlate', 'invalidVin', 'invalidRenavam', 'missingProof'])
+    if (!res.ok) expect(res.errors).toEqual(['invalidPlate', 'invalidVin', 'invalidRenavam', 'missingDocuments'])
+  })
+
+  it('exige identidade frente e verso, selfie e os documentos do veículo', () => {
+    const res = register(empty, { ...civic, documents: { idFront: 'front.jpg', registration: 'reg.pdf' } })
+    expect(res.ok).toBe(false)
+    if (!res.ok) expect(res.missing).toEqual(['idBack', 'selfie', 'title'])
+    const ok = register(empty, civic, new Date(), fixedId)
+    expect(ok.ok && ok.listing.documents).toEqual(DEMO_DOCUMENTS)
   })
 
   it('permite o mesmo veículo em sites diferentes', () => {

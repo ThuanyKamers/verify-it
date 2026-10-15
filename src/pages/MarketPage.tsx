@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react'
-import { CarArt } from '../components/CarArt'
+import { VehicleImage } from '../components/VehicleImage'
 import { useI18n } from '../i18n'
 import { describe, listingHref, mockDetails, type MockDetails } from '../lib/mockListing'
+import { photoFor, vehicleKind, type VehicleKind, type VehiclePhoto } from '../lib/photos'
 import type { AppState, Listing } from '../lib/verify'
 import '../market.css'
 
@@ -9,6 +10,8 @@ interface Vehicle {
   listing: Listing
   details: MockDetails
   sites: string[]
+  kind: VehicleKind
+  photo?: VehiclePhoto
 }
 
 type Sort = 'new' | 'priceAsc' | 'priceDesc'
@@ -22,7 +25,7 @@ function vehicles(state: AppState): Vehicle[] {
   }
   return [...byPlate.values()].map((group) => {
     const listing = group.reduce((a, b) => (a.createdAt <= b.createdAt ? a : b))
-    return { listing, details: mockDetails(listing), sites: [...new Set(group.map((l) => l.site))] }
+    return { listing, details: mockDetails(listing), sites: [...new Set(group.map((l) => l.site))], kind: vehicleKind(listing), photo: photoFor(listing) }
   })
 }
 
@@ -33,6 +36,7 @@ function skyOf(plate: string): number {
 export function MarketPage({ state }: { state: AppState }) {
   const { t, locale } = useI18n()
   const [query, setQuery] = useState('')
+  const [kind, setKind] = useState<VehicleKind | ''>('')
   const [city, setCity] = useState('')
   const [kmMin, setKmMin] = useState('')
   const [kmMax, setKmMax] = useState('')
@@ -47,7 +51,8 @@ export function MarketPage({ state }: { state: AppState }) {
     const q = query.trim().toLowerCase()
     const min = Number(kmMin) || 0
     const max = Number(kmMax) || Infinity
-    const list = all.filter(({ listing: l, details: d }) => {
+    const list = all.filter(({ listing: l, details: d, kind: k }) => {
+      if (kind && k !== kind) return false
       if (q && !`${l.make} ${l.model} ${l.year}`.toLowerCase().includes(q)) return false
       if (city && d.city !== city) return false
       return d.km >= min && d.km <= max
@@ -58,11 +63,13 @@ export function MarketPage({ state }: { state: AppState }) {
       priceDesc: (a, b) => b.details.price - a.details.price,
     }
     return list.sort(order[sort])
-  }, [all, query, city, kmMin, kmMax, sort])
+  }, [all, query, kind, city, kmMin, kmMax, sort])
 
-  const filtered = query !== '' || city !== '' || kmMin !== '' || kmMax !== ''
+  const credits = useMemo(() => [...new Map(all.flatMap((v) => (v.photo ? [[v.photo.file, v.photo] as const] : []))).values()], [all])
+  const filtered = query !== '' || kind !== '' || city !== '' || kmMin !== '' || kmMax !== ''
   function reset() {
     setQuery('')
+    setKind('')
     setCity('')
     setKmMin('')
     setKmMax('')
@@ -77,6 +84,14 @@ export function MarketPage({ state }: { state: AppState }) {
         <label className="field market-search">
           {t('mk.search')}
           <input type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder={t('mk.searchPh')} />
+        </label>
+        <label className="field">
+          {t('mk.type')}
+          <select value={kind} onChange={(e) => setKind(e.target.value as VehicleKind | '')}>
+            <option value="">{t('mk.type.all')}</option>
+            <option value="car">{t('mk.type.car')}</option>
+            <option value="motorcycle">{t('mk.type.motorcycle')}</option>
+          </select>
         </label>
         <label className="field">
           {t('mk.location')}
@@ -112,10 +127,10 @@ export function MarketPage({ state }: { state: AppState }) {
         <p className="market-empty">{t('mk.empty')}</p>
       ) : (
         <ul className="market-grid">
-          {shown.map(({ listing: l, details: d, sites }) => (
+          {shown.map(({ listing: l, details: d, sites, photo }) => (
             <li key={l.plate} className="car-card">
               <a className="car-photo" href={listingHref(l)} target="_blank" rel="noopener noreferrer" aria-label={`${t('mk.view')}: ${l.make} ${l.model}`}>
-                <CarArt view="side" body={d.bodyColor} sky={skyOf(l.plate)} />
+                <VehicleImage photo={photo} alt={`${l.make} ${l.model}`} body={d.bodyColor} sky={skyOf(l.plate)} />
                 <span className="car-badge">{t('mk.verified')}</span>
               </a>
               <div className="car-body">
@@ -130,6 +145,22 @@ export function MarketPage({ state }: { state: AppState }) {
             </li>
           ))}
         </ul>
+      )}
+
+      {credits.length > 0 && (
+        <footer className="market-credits">
+          <h2>{t('mk.credits')}</h2>
+          <ul>
+            {credits.map((p) => (
+              <li key={p.file}>
+                {p.subject}: <a href={p.sourceUrl} target="_blank" rel="noopener noreferrer">{p.author}</a>
+                {', '}
+                <a href={p.licenseUrl} target="_blank" rel="noopener noreferrer license">{p.license}</a>
+              </li>
+            ))}
+          </ul>
+          <p>{t('mk.creditsNote')}</p>
+        </footer>
       )}
     </section>
   )
