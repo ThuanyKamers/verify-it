@@ -1,6 +1,7 @@
 import { CarGallery } from '../components/CarGallery'
 import { useI18n } from '../i18n'
 import { describe, mockDetails, SITE_NAMES, siteTheme } from '../lib/mockListing'
+import { photoFor, vehicleKind } from '../lib/photos'
 import { maskPlate } from '../lib/validation'
 import type { Listing } from '../lib/verify'
 import { listedWhen } from './MarketplacePage'
@@ -18,6 +19,7 @@ export function ClassifiedPage({ listing: l }: { listing: Listing }) {
   const km = new Intl.NumberFormat(locale).format(d.km)
   const when = listedWhen(l.createdAt, locale, new Date().toISOString()) || t('mp.now')
   const sky = l.plate.charCodeAt(0) % 4
+  const photo = photoFor(l)
 
   const specs: [string, string][] = [
     [t('cl.make'), l.make],
@@ -44,11 +46,11 @@ export function ClassifiedPage({ listing: l }: { listing: Listing }) {
       </header>
 
       <main className="cl-main">
-        <p className="cl-crumb">{t('cl.home')} › {t('cl.category')} › {l.make} › {car}</p>
+        <p className="cl-crumb">{t('cl.home')} › {t(vehicleKind(l) === 'motorcycle' ? 'cl.category.moto' : 'cl.category')} › {l.make} › {car}</p>
         {l.status === 'sold' && <p className="cl-sold" role="status">{t('cl.soldBanner')}</p>}
 
         <div className="cl-grid">
-          <CarGallery label={title} body={d.bodyColor} sky={sky} />
+          <CarGallery label={title} body={d.bodyColor} sky={sky} photo={photo} />
 
           <aside className="cl-box">
             <h1>{title}</h1>

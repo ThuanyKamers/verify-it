@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import { CarArt, type CarView } from '../components/CarArt'
+import { PhotoCredit, VehicleImage } from '../components/VehicleImage'
 import { useI18n } from '../i18n'
 import { describe, mockDetails } from '../lib/mockListing'
+import { photoFor } from '../lib/photos'
 import { maskPlate } from '../lib/validation'
 import type { AppState } from '../lib/verify'
 import '../marketplace.css'
@@ -67,6 +69,7 @@ export function MarketplacePage({ state, checkId }: { state: AppState; checkId: 
   const km = new Intl.NumberFormat(locale).format(d.km)
   const when = listedWhen(l.createdAt, locale, new Date().toISOString()) || t('mp.now')
   const sky = l.plate.charCodeAt(0) % 4
+  const realPhoto = photoFor(l)
   const go = (step: number) => setIndex((i) => (i + step + VIEWS.length) % VIEWS.length)
   const photo = (n: number) => t('mp.photo', { n, total: VIEWS.length })
 
@@ -83,21 +86,27 @@ export function MarketplacePage({ state, checkId }: { state: AppState; checkId: 
     <div className="mp fb">
       <section className="fb-viewer" aria-label={car}>
         <div className="fb-backdrop" aria-hidden="true">
-          <CarArt view={VIEWS[index]} body={d.bodyColor} sky={sky} />
+          <VehicleImage photo={realPhoto} alt="" view={VIEWS[index]} body={d.bodyColor} sky={sky} />
         </div>
         <div className="fb-photo">
-          <CarArt view={VIEWS[index]} body={d.bodyColor} sky={sky} />
+          <VehicleImage photo={realPhoto} alt={car} view={VIEWS[index]} body={d.bodyColor} sky={sky} />
         </div>
         <a className="fb-round fb-close" href="#" aria-label={t('mp.close')} title={t('mp.close')}><Icon name="close" /></a>
-        <button type="button" className="fb-round fb-arrow fb-prev" onClick={() => go(-1)} aria-label={t('mp.prev')}><Icon name="prev" /></button>
-        <button type="button" className="fb-round fb-arrow fb-next" onClick={() => go(1)} aria-label={t('mp.next')}><Icon name="next" /></button>
-        <div className="fb-thumbs">
-          {VIEWS.map((v, i) => (
-            <button key={v} type="button" className={i === index ? 'on' : ''} onClick={() => setIndex(i)} aria-label={photo(i + 1)} aria-current={i === index}>
-              <CarArt view={v} body={d.bodyColor} sky={sky} />
-            </button>
-          ))}
-        </div>
+        {realPhoto ? (
+          <PhotoCredit photo={realPhoto} className="fb-credit" />
+        ) : (
+          <>
+            <button type="button" className="fb-round fb-arrow fb-prev" onClick={() => go(-1)} aria-label={t('mp.prev')}><Icon name="prev" /></button>
+            <button type="button" className="fb-round fb-arrow fb-next" onClick={() => go(1)} aria-label={t('mp.next')}><Icon name="next" /></button>
+            <div className="fb-thumbs">
+              {VIEWS.map((v, i) => (
+                <button key={v} type="button" className={i === index ? 'on' : ''} onClick={() => setIndex(i)} aria-label={photo(i + 1)} aria-current={i === index}>
+                  <CarArt view={v} body={d.bodyColor} sky={sky} />
+                </button>
+              ))}
+            </div>
+          </>
+        )}
       </section>
 
       <aside className="fb-panel">
