@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { VehicleImage } from '../components/VehicleImage'
 import { useI18n } from '../i18n'
 import { describe, listingHref, mockDetails, type MockDetails } from '../lib/mockListing'
+import { CITIES, distanceKm, findCity } from '../lib/places'
 import { photoFor, vehicleKind, type VehicleKind, type VehiclePhoto } from '../lib/photos'
 import type { AppState, Listing } from '../lib/verify'
 import '../market.css'
@@ -13,6 +14,8 @@ interface Vehicle {
   kind: VehicleKind
   photo?: VehiclePhoto
 }
+
+const RADII = [10, 25, 50, 100, 200]
 
 type Sort = 'new' | 'priceAsc' | 'priceDesc'
 
@@ -38,24 +41,24 @@ export function MarketPage({ state }: { state: AppState }) {
   const [query, setQuery] = useState('')
   const [kind, setKind] = useState<VehicleKind | ''>('')
   const [city, setCity] = useState('')
-  const [kmMin, setKmMin] = useState('')
-  const [kmMax, setKmMax] = useState('')
+  const [radius, setRadius] = useState(50)
   const [sort, setSort] = useState<Sort>('new')
 
   const all = useMemo(() => vehicles(state), [state])
-  const cities = useMemo(() => [...new Set(all.map((v) => v.details.city))].sort((a, b) => a.localeCompare(b, locale)), [all, locale])
+  const cities = useMemo(() => [...new Set([...Object.keys(CITIES), ...all.map((v) => v.details.city)])].sort((a, b) => a.localeCompare(b, locale)), [all, locale])
+  const place = city.trim()
+  const unknownPlace = place !== '' && !findCity(place) && !all.some((v) => distanceKm(place, v.details.city) === 0)
   const euro = new Intl.NumberFormat(locale, { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 })
   const number = new Intl.NumberFormat(locale)
 
   const shown = useMemo(() => {
     const q = query.trim().toLowerCase()
-    const min = Number(kmMin) || 0
-    const max = Number(kmMax) || Infinity
     const list = all.filter(({ listing: l, details: d, kind: k }) => {
       if (kind && k !== kind) return false
       if (q && !`${l.make} ${l.model} ${l.year}`.toLowerCase().includes(q)) return false
-      if (city && d.city !== city) return false
-      return d.km >= min && d.km <= max
+      if (!place) return true
+      const away = distanceKm(place, d.city)
+      return away !== undefined && away <= radius
     })
     const order: Record<Sort, (a: Vehicle, b: Vehicle) => number> = {
       new: (a, b) => b.listing.createdAt.localeCompare(a.listing.createdAt),
@@ -63,16 +66,15 @@ export function MarketPage({ state }: { state: AppState }) {
       priceDesc: (a, b) => b.details.price - a.details.price,
     }
     return list.sort(order[sort])
-  }, [all, query, kind, city, kmMin, kmMax, sort])
+  }, [all, query, kind, place, radius, sort])
 
   const credits = useMemo(() => [...new Map(all.flatMap((v) => (v.photo ? [[v.photo.file, v.photo] as const] : []))).values()], [all])
-  const filtered = query !== '' || kind !== '' || city !== '' || kmMin !== '' || kmMax !== ''
+  const filtered = query !== '' || kind !== '' || city !== ''
   function reset() {
     setQuery('')
     setKind('')
     setCity('')
-    setKmMin('')
-    setKmMax('')
+    setRadius(50)
   }
 
   return (
@@ -95,18 +97,16 @@ export function MarketPage({ state }: { state: AppState }) {
         </label>
         <label className="field">
           {t('mk.location')}
-          <select value={city} onChange={(e) => setCity(e.target.value)}>
-            <option value="">{t('mk.allLocations')}</option>
-            {cities.map((c) => <option key={c} value={c}>{c}</option>)}
+          <input list="market-cities" value={city} onChange={(e) => setCity(e.target.value)} placeholder={t('mk.locationPh')} autoComplete="address-level2" aria-describedby={unknownPlace ? 'market-place-error' : undefined} aria-invalid={unknownPlace || undefined} />
+          <datalist id="market-cities">
+            {cities.map((c) => <option key={c} value={c} />)}
+          </datalist>
+        </label>
+        <label className="field">
+          {t('mk.radius')}
+          <select value={radius} onChange={(e) => setRadius(Number(e.target.value))} disabled={!place}>
+            {RADII.map((r) => <option key={r} value={r}>{t('mk.radiusKm', { km: r })}</option>)}
           </select>
-        </label>
-        <label className="field">
-          {t('mk.kmMin')}
-          <input inputMode="numeric" value={kmMin} onChange={(e) => setKmMin(e.target.value.replace(/\D/g, ''))} placeholder="0" />
-        </label>
-        <label className="field">
-          {t('mk.kmMax')}
-          <input inputMode="numeric" value={kmMax} onChange={(e) => setKmMax(e.target.value.replace(/\D/g, ''))} placeholder="150000" />
         </label>
         <label className="field">
           {t('mk.sort')}
@@ -117,6 +117,8 @@ export function MarketPage({ state }: { state: AppState }) {
           </select>
         </label>
       </form>
+
+      {unknownPlace && <p id="market-place-error" className="market-note">{t('mk.unknownPlace', { city: place })}</p>}
 
       <div className="market-bar">
         <p role="status">{shown.length === 1 ? t('mk.results.one') : t('mk.results', { n: shown.length })}</p>
@@ -134,7 +136,7 @@ export function MarketPage({ state }: { state: AppState }) {
               </a>
               <div className="car-body">
                 <h2>{l.make} {l.model}</h2>
-                <p className="car-meta">{l.year} · {t('mk.km', { km: number.format(d.km) })} · {d.city}</p>
+                <p className="car-meta">{l.year} · {t('mk.km', { km: number.format(d.km) })} · {d.city}{place && !unknownPlace ? ` (${t('mk.away', { km: Math.round(distanceKm(place, d.city) ?? 0) })})` : ''}</p>
                 <p className="car-desc">{describe(d, t)}</p>
                 <p className="car-price">{euro.format(d.price)}</p>
                 <p className="car-seller">{t('mk.seller', { name: d.seller })}</p>
