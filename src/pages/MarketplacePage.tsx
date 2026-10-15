@@ -1,14 +1,11 @@
-import { useState } from 'react'
-import { CarArt, type CarView } from '../components/CarArt'
+import { CarGallery } from '../components/CarGallery'
 import { useI18n, type MessageKey } from '../i18n'
 import { mockDetails } from '../lib/mockListing'
 import { maskPlate } from '../lib/validation'
 import type { AppState } from '../lib/verify'
 import '../marketplace.css'
 
-const VIEWS: CarView[] = ['side', 'front', 'rear', 'cabin']
-
-function listedWhen(iso: string, locale: string, now: string): string {
+export function listedWhen(iso: string, locale: string, now: string): string {
   const minutes = Math.round((new Date(iso).getTime() - new Date(now).getTime()) / 60000)
   const rtf = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' })
   if (Math.abs(minutes) < 2) return ''
@@ -20,7 +17,6 @@ function listedWhen(iso: string, locale: string, now: string): string {
 /** Cópia fictícia de um anúncio de marketplace, montada com os dados cadastrados no Verify It. */
 export function MarketplacePage({ state, checkId }: { state: AppState; checkId: string }) {
   const { t, locale } = useI18n()
-  const [index, setIndex] = useState(0)
   const l = state.listings.find((x) => x.checkId === checkId)
 
   if (!l) {
@@ -41,7 +37,6 @@ export function MarketplacePage({ state, checkId }: { state: AppState; checkId: 
   const when = listedWhen(l.createdAt, locale, new Date().toISOString()) || t('mp.now')
   const sky = l.plate.charCodeAt(0) % 4
   const val = (key: MessageKey) => t(key)
-  const go = (step: number) => setIndex((i) => (i + step + VIEWS.length) % VIEWS.length)
 
   return (
     <div className="mp">
@@ -56,22 +51,7 @@ export function MarketplacePage({ state, checkId }: { state: AppState; checkId: 
       </header>
 
       <div className="mp-layout">
-        <section className="mp-gallery" aria-label={car}>
-          <div className="mp-stage">
-            <CarArt view={VIEWS[index]} body={d.bodyColor} sky={sky} />
-            <button type="button" className="mp-arrow mp-prev" onClick={() => go(-1)} aria-label={t('mp.prev')}>‹</button>
-            <button type="button" className="mp-arrow mp-next" onClick={() => go(1)} aria-label={t('mp.next')}>›</button>
-            <span className="mp-counter">{t('mp.photo', { n: index + 1, total: VIEWS.length })}</span>
-          </div>
-          <div className="mp-thumbs">
-            {VIEWS.map((v, i) => (
-              <button key={v} type="button" className={i === index ? 'on' : ''} onClick={() => setIndex(i)} aria-label={t('mp.photo', { n: i + 1, total: VIEWS.length })} aria-current={i === index}>
-                <CarArt view={v} body={d.bodyColor} sky={sky} />
-              </button>
-            ))}
-          </div>
-          <p className="mp-note">{t('mp.photoNote')}</p>
-        </section>
+        <CarGallery label={car} body={d.bodyColor} sky={sky} />
 
         <aside className="mp-info">
           <h1>{car}</h1>

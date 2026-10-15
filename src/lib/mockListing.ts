@@ -50,7 +50,25 @@ export function mockDetails(l: Listing): MockDetails {
   return BY_PLATE[l.plate] ?? FALLBACK
 }
 
-/** Endereço da página-cópia para anúncios do Facebook; os demais sites abrem o link original. */
-export function listingHref(l: Pick<Listing, 'url' | 'site' | 'checkId'>): string {
-  return l.site === 'facebook.com' ? `${import.meta.env.BASE_URL}#/listing/${l.checkId}` : l.url
+export type SiteTheme = 'facebook' | 'olx' | 'webmotors' | 'mercadolivre' | 'generic'
+
+export const SITE_NAMES: Record<SiteTheme, string> = {
+  facebook: 'Marketplace',
+  olx: 'OLX',
+  webmotors: 'webmotors',
+  mercadolivre: 'mercado livre',
+  generic: 'Classifieds',
+}
+
+export function siteTheme(site: string): SiteTheme {
+  if (site.includes('facebook')) return 'facebook'
+  if (site.includes('olx')) return 'olx'
+  if (site.includes('webmotors')) return 'webmotors'
+  if (site.includes('mercadolivre')) return 'mercadolivre'
+  return 'generic'
+}
+
+/** Endereço da página-cópia do anúncio: todo site tem uma cópia própria dentro do protótipo. */
+export function listingHref(l: Pick<Listing, 'checkId'>): string {
+  return `${import.meta.env.BASE_URL}#/listing/${l.checkId}`
 }

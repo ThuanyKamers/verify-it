@@ -6,7 +6,7 @@ import { ActivityPage } from './pages/ActivityPage'
 import { CheckPage } from './pages/CheckPage'
 import { HowPage } from './pages/HowPage'
 import { LoginPage } from './pages/LoginPage'
-import { MarketplacePage } from './pages/MarketplacePage'
+import { ListingCopyPage } from './pages/ListingCopyPage'
 import { RegisterPage } from './pages/RegisterPage'
 
 type Route = 'check' | 'register' | 'how' | 'activity'
@@ -68,7 +68,7 @@ export function App() {
     window.location.hash = ''
   }
 
-  if (listingId) return <MarketplacePage state={app.state} checkId={listingId} />
+  if (listingId) return <ListingCopyPage state={app.state} checkId={listingId} />
 
   return (
     <div className="app">
