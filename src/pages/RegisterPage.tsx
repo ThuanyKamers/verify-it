@@ -20,6 +20,10 @@ const DEMO: RegisterInput = {
   model: 'Civic EXL',
   year: '2019',
   proofFileName: 'crlv-e-exemplo.pdf',
+  price: '21900',
+  km: '62400',
+  city: 'Berlin',
+  description: '2019 Honda Civic EXL, single owner, garage kept, full service history. Happy for you to have it inspected by a mechanic you trust.',
 }
 
 export function RegisterPage({ state, update }: Props) {
@@ -114,6 +118,25 @@ export function RegisterPage({ state, update }: Props) {
             <input inputMode="numeric" maxLength={11} value={form.renavam} onChange={(e) => set('renavam')(e.target.value)} />
           </label>
         </div>
+        <div className="grid-3">
+          <label className="field">
+            {t('register.price')}
+            <input inputMode="numeric" value={form.price ?? ''} onChange={(e) => set('price')(e.target.value)} />
+          </label>
+          <label className="field">
+            {t('register.km')}
+            <input inputMode="numeric" value={form.km ?? ''} onChange={(e) => set('km')(e.target.value)} />
+          </label>
+          <label className="field">
+            {t('register.city')}
+            <input value={form.city ?? ''} onChange={(e) => set('city')(e.target.value)} />
+          </label>
+        </div>
+        <label className="field">
+          {t('register.description')}
+          <textarea rows={3} value={form.description ?? ''} onChange={(e) => set('description')(e.target.value)} />
+          <small>{t('register.adHint')}</small>
+        </label>
         <label className="field">
           {t('register.proof')}
           <input type="file" accept="application/pdf,image/*" onChange={(e) => set('proofFileName')(e.target.files?.[0]?.name ?? '')} />

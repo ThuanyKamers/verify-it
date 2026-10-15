@@ -15,6 +15,8 @@ export interface MockDetails {
   interior: MessageKey
   bodyColor: string
   description: MessageKey
+  /** Descrição escrita pelo vendedor; tem prioridade sobre `description`. */
+  descriptionText?: string
   features: MessageKey[]
   seller: string
   memberSince: number
@@ -42,13 +44,19 @@ const BY_PLATE: Record<string, MockDetails> = {
 }
 
 const FALLBACK: MockDetails = {
-  price: 89900, km: 71000, city: 'São Paulo, SP', transmission: 'mp.trans.auto', fuel: 'mp.fuel.flex',
+  price: 15900, km: 71000, city: 'Berlin', transmission: 'mp.trans.auto', fuel: 'mp.fuel.flex',
   exterior: 'color.gray', interior: 'color.black', bodyColor: '#6f7680', description: 'mp.desc.generic',
   features: COMMON, seller: 'Carlos M.', memberSince: 2017, owners: 1,
 }
 
 export function mockDetails(l: Listing): MockDetails {
-  return BY_PLATE[l.plate] ?? FALLBACK
+  const base = BY_PLATE[l.plate] ?? FALLBACK
+  const ad = Object.fromEntries(Object.entries(l.ad ?? {}).filter(([, v]) => v !== undefined))
+  return { ...base, ...ad }
+}
+
+export function describe(d: MockDetails, t: (key: MessageKey) => string): string {
+  return d.descriptionText ?? t(d.description)
 }
 
 export type SiteTheme = 'facebook' | 'kleinanzeigen' | 'standvirtual' | 'leboncoin' | 'olx' | 'webmotors' | 'mercadolivre' | 'generic'

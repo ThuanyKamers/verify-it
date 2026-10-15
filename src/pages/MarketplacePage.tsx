@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { CarArt, type CarView } from '../components/CarArt'
 import { useI18n } from '../i18n'
-import { mockDetails } from '../lib/mockListing'
+import { describe, mockDetails } from '../lib/mockListing'
 import { maskPlate } from '../lib/validation'
 import type { AppState } from '../lib/verify'
 import '../marketplace.css'
@@ -121,7 +121,7 @@ export function MarketplacePage({ state, checkId }: { state: AppState; checkId: 
           </ul>
 
           <h2>{t('mp.sellerDescription')}</h2>
-          <p className={expanded ? 'fb-desc' : 'fb-desc fb-clamp'}>{t(d.description)}</p>
+          <p className={expanded ? 'fb-desc' : 'fb-desc fb-clamp'}>{describe(d, t)}</p>
           {!expanded && <button type="button" className="fb-more" onClick={() => setExpanded(true)}>{t('mp.seeMore')}</button>}
 
           <div className="fb-map" aria-hidden="true">

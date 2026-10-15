@@ -6,7 +6,7 @@ import { useCallback, useState } from 'react'
 import { seedState } from './seed'
 import type { AppState } from './verify'
 
-const STORAGE_KEY = 'verify-it:v3'
+const STORAGE_KEY = 'verify-it:v4'
 
 export interface StateStore {
   load(): AppState
