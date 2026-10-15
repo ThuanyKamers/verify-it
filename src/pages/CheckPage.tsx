@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { Leaders } from '../components/Leaders'
 import { PlateInput } from '../components/PlateInput'
-import { listingHref } from '../lib/mockListing'
+import { displaySite, listingHref, siteTheme } from '../lib/mockListing'
 import { useI18n, type MessageKey } from '../i18n'
 import { DEMO_URLS } from '../lib/seed'
 import type { useAppState } from '../lib/store'
@@ -45,19 +45,26 @@ export function CheckPage({ state, update }: Props) {
     runCheck(exampleUrl, examplePlate, 'DE')
   }
 
-  /** Anúncios ativos em ordem embaralhada: o próximo nunca repete o veículo nem o site do anterior. */
+  /**
+   * Anúncios ativos em ordem embaralhada; a cada três cliques, um é do marketplace do Verify It.
+   * O próximo nunca repete o veículo nem o site do anterior.
+   */
   function tryVerified() {
     const active = state.listings.filter((l) => l.status === 'active').sort((a, b) => shuffleKey(a.checkId) - shuffleKey(b.checkId))
     if (active.length === 0) return tryExample(DEMO_URLS.verified)
+    const market = active.filter((l) => siteTheme(l.site) === 'verifyit')
+    const others = active.filter((l) => siteTheme(l.site) !== 'verifyit')
+    const fromMarket = market.length > 0 && (nextVerified % 3 === 2 || others.length === 0)
+    const pool = fromMarket ? market : others
     const last = result?.status === 'verified' ? result.listing : undefined
-    let i = nextVerified % active.length
-    for (let tries = 0; tries < active.length; tries++) {
-      const l = active[i]
+    let i = (fromMarket ? Math.floor(nextVerified / 3) : nextVerified) % pool.length
+    for (let tries = 0; tries < pool.length; tries++) {
+      const l = pool[i]
       if (!last || (l.plate !== last.plate && l.site !== last.site)) break
-      i = (i + 1) % active.length
+      i = (i + 1) % pool.length
     }
-    setNextVerified(i + 1)
-    tryExample(active[i].url)
+    setNextVerified((n) => n + 1)
+    tryExample(pool[i].url)
   }
 
   function report() {
@@ -118,7 +125,7 @@ export function CheckPage({ state, update }: Props) {
                 rows={[
                   { label: t('result.vehicle'), value: `${result.listing.make} ${result.listing.model} ${result.listing.year}` },
                   { label: t('result.plate'), value: maskPlate(result.listing.plate) },
-                  { label: t('result.site'), value: result.listing.site },
+                  { label: t('result.site'), value: displaySite(result.listing.site) },
                   { label: t('result.verifiedOn'), value: date(result.listing.createdAt) },
                   { label: t('result.checkId'), value: <code>{result.listing.checkId}</code> },
                 ]}
@@ -133,7 +140,7 @@ export function CheckPage({ state, update }: Props) {
               <ul className="plain-list">
                 {official.map((l) => (
                   <li key={l.checkId}>
-                    <a href={listingHref(l)} target="_blank" rel="noopener noreferrer">{l.site}</a>, {l.make} {l.model} {l.year}
+                    <a href={listingHref(l)} target="_blank" rel="noopener noreferrer">{displaySite(l.site)}</a>, {l.make} {l.model} {l.year}
                     {l.checkId === result.listing?.checkId && result.status === 'verified' && <> ({t('result.thisListing')})</>}
                   </li>
                 ))}

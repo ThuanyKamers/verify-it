@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { VehicleImage } from '../components/VehicleImage'
 import { useI18n } from '../i18n'
-import { describe, mockDetails, type MockDetails } from '../lib/mockListing'
+import { describe, mockDetails, siteTheme, type MockDetails } from '../lib/mockListing'
 import { CITIES, distanceKm, findCity } from '../lib/places'
 import { photoFor, vehicleKind, type VehicleKind, type VehiclePhoto } from '../lib/photos'
 import type { AppState, Listing } from '../lib/verify'
@@ -26,7 +26,9 @@ function vehicles(state: AppState): Vehicle[] {
     byPlate.set(l.plate, [...(byPlate.get(l.plate) ?? []), l])
   }
   return [...byPlate.values()].map((group) => {
-    const listing = group.reduce((a, b) => (a.createdAt <= b.createdAt ? a : b))
+    // O card abre o anúncio publicado no próprio marketplace, quando existe; senão o mais antigo.
+    const own = group.find((l) => siteTheme(l.site) === 'verifyit')
+    const listing = own ?? group.reduce((a, b) => (a.createdAt <= b.createdAt ? a : b))
     return { listing, details: mockDetails(listing), kind: vehicleKind(listing), photo: photoFor(listing) }
   })
 }

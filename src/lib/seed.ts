@@ -1,6 +1,8 @@
 // Dados de demonstração carregados no primeiro acesso.
 // Todos os anúncios, placas e documentos são fictícios.
 
+import { marketUrl } from './mockListing'
+import { parseListingUrl } from './url'
 import { renavamCheckDigit } from './validation'
 import type { AppState, DocumentFiles, Listing, ListingAd } from './verify'
 
@@ -46,6 +48,13 @@ function listing(checkId: string, url: string, key: string, site: string, vehicl
   return { checkId, url, key, site, ...vehicle, documents: DEMO_DOCUMENTS, createdAt, status, ...(ad ? { ad } : {}) }
 }
 
+/** Anúncio publicado direto no marketplace do Verify It. */
+function marketListing(checkId: string, vehicle: typeof civic, createdAt: string, ad: ListingAd): Listing {
+  const url = marketUrl(checkId)
+  const parsed = parseListingUrl(url)!
+  return listing(checkId, url, parsed.key, parsed.site, vehicle, createdAt, 'active', ad)
+}
+
 export const DEMO_URLS = {
   verified: 'https://www.olx.pt/d/anuncio/honda-civic-exl-2019-IDHk3sRt.html',
   cloned: 'https://www.olx.pt/d/anuncio/honda-civic-2019-impecavel-IDHx9pQz.html',
@@ -84,6 +93,13 @@ export function seedState(): AppState {
       listing('VI-C8H1ML', 'https://moto.mercadolivre.com.br/MLB-3678901234-honda-cb650r-2021-_JM', 'moto.mercadolivre.com.br/MLB-3678901234-honda-cb650r-2021-_JM', 'moto.mercadolivre.com.br', cb650, '2026-10-14T08:15:00.000Z', 'active', ads.cb650),
       listing('VI-L4S8SV', 'https://www.standvirtual.com/carros/anuncio/skoda-octavia-combi-1-5-tsi-ID8zAb34.html', 'standvirtual.com/carros/anuncio/skoda-octavia-combi-1-5-tsi-ID8zAb34.html', 'standvirtual.com', skoda, '2026-10-12T13:00:00.000Z', 'active', ads.skoda),
       listing('VI-L9S2KA', 'https://www.kleinanzeigen.de/s-anzeige/skoda-octavia-combi-1-5-tsi/2855566778-216-7301', 'kleinanzeigen.de/s-anzeige/skoda-octavia-combi-1-5-tsi/2855566778-216-7301', 'kleinanzeigen.de', skoda, '2026-10-13T08:25:00.000Z', 'active', ads.skoda),
+      // Anunciados direto no marketplace do Verify It.
+      marketListing('VI-M2B7QX', bmw, '2026-10-11T08:30:00.000Z', ads.bmw),
+      marketListing('VI-M5T3KD', tesla, '2026-10-11T19:20:00.000Z', ads.tesla),
+      marketListing('VI-M8G4PR', gs, '2026-10-13T09:40:00.000Z', ads.gs),
+      marketListing('VI-M3C9HN', cb650, '2026-10-14T10:05:00.000Z', ads.cb650),
+      marketListing('VI-M6S1LV', skoda, '2026-10-13T14:50:00.000Z', ads.skoda),
+      marketListing('VI-M4K8MC', mini, '2026-10-09T15:10:00.000Z', ads.mini),
     ],
     reports: [
       { key: 'olx.pt/d/anuncio/honda-civic-2019-impecavel-IDHx9pQz.html', site: 'olx.pt', url: DEMO_URLS.cloned, createdAt: '2026-10-10T20:15:00.000Z' },
