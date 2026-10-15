@@ -1,4 +1,6 @@
 import { useState, type FormEvent } from 'react'
+import { Leaders } from '../components/Leaders'
+import { PlateInput } from '../components/PlateInput'
 import { useI18n, type MessageKey } from '../i18n'
 import type { useAppState } from '../lib/store'
 import { renavamCheckDigit } from '../lib/validation'
@@ -45,41 +47,34 @@ export function RegisterPage({ state, update }: Props) {
 
   if (result?.ok) {
     return (
-      <section>
-        <div className="card result verified">
-          <div className="result-head">
-            <span className="result-icon" aria-hidden="true">✓</span>
-            <div>
-              <h2>{t('register.success.title')}</h2>
-              <p>{t('register.success.body')}</p>
-            </div>
-          </div>
-          <dl className="facts">
-            <dt>{t('result.checkId')}</dt>
-            <dd><code>{result.listing.checkId}</code></dd>
-            <dt>{t('result.vehicle')}</dt>
-            <dd>{result.listing.make} {result.listing.model} {result.listing.year}</dd>
-            <dt>{t('result.site')}</dt>
-            <dd>{result.listing.site}</dd>
-            <dt>{t('result.verifiedOn')}</dt>
-            <dd>{new Date(result.listing.createdAt).toLocaleString(locale)}</dd>
-          </dl>
+      <section className="page">
+        <article className="report report-verified">
+          <h2 className="stamp">{t('status.verified')}</h2>
+          <p className="report-body">{t('register.success.body')}</p>
+          <Leaders
+            rows={[
+              { label: t('result.checkId'), value: <code>{result.listing.checkId}</code> },
+              { label: t('result.vehicle'), value: `${result.listing.make} ${result.listing.model} ${result.listing.year}` },
+              { label: t('result.site'), value: result.listing.site },
+              { label: t('result.verifiedOn'), value: new Date(result.listing.createdAt).toLocaleString(locale) },
+            ]}
+          />
           {result.otherSites.length > 0 && (
             <p>{t('register.success.otherSites', { sites: result.otherSites.map((l) => l.site).join(', ') })}</p>
           )}
-          <button type="button" className="primary" onClick={restart}>{t('register.success.another')}</button>
-        </div>
+          <button type="button" className="button button-primary" onClick={restart}>{t('register.success.another')}</button>
+        </article>
       </section>
     )
   }
 
   return (
-    <section>
+    <section className="page">
       <h1>{t('register.title')}</h1>
       <p className="lead">{t('register.lead')}</p>
 
       {result && !result.ok && (
-        <div className="card result scam" role="alert">
+        <div className="alert" role="alert">
           <h2>{t('register.rejected.title')}</h2>
           <ul className="reasons">
             {result.errors.map((err) => (
@@ -89,48 +84,45 @@ export function RegisterPage({ state, update }: Props) {
         </div>
       )}
 
-      <form className="card form" onSubmit={onSubmit} noValidate>
-        <label>
+      <form className="form" onSubmit={onSubmit} noValidate>
+        <label className="field">
           {t('register.url')}
           <input type="url" inputMode="url" value={form.url} onChange={(e) => set('url')(e.target.value)} placeholder="https://www.olx.com.br/..." />
         </label>
         <div className="grid-3">
-          <label>
+          <label className="field">
             {t('register.make')}
             <input value={form.make} onChange={(e) => set('make')(e.target.value)} />
           </label>
-          <label>
+          <label className="field">
             {t('register.model')}
             <input value={form.model} onChange={(e) => set('model')(e.target.value)} />
           </label>
-          <label>
+          <label className="field">
             {t('register.year')}
             <input inputMode="numeric" maxLength={4} value={form.year} onChange={(e) => set('year')(e.target.value)} />
           </label>
         </div>
         <div className="grid-3">
-          <label>
-            {t('register.plate')}
-            <input value={form.plate} maxLength={8} placeholder="ABC1D23" onChange={(e) => set('plate')(e.target.value.toUpperCase())} />
-          </label>
-          <label>
+          <PlateInput value={form.plate} onChange={set('plate')} label={t('register.plate')} />
+          <label className="field">
             {t('register.vin')}
             <input value={form.vin} maxLength={17} onChange={(e) => set('vin')(e.target.value.toUpperCase())} />
           </label>
-          <label>
+          <label className="field">
             {t('register.renavam')}
             <input inputMode="numeric" maxLength={11} value={form.renavam} onChange={(e) => set('renavam')(e.target.value)} />
           </label>
         </div>
-        <label>
+        <label className="field">
           {t('register.proof')}
           <input type="file" accept="application/pdf,image/*" onChange={(e) => set('proofFileName')(e.target.files?.[0]?.name ?? '')} />
-          <small>{form.proofFileName && form.proofFileName === DEMO.proofFileName ? `📎 ${form.proofFileName} · ` : ''}{t('register.proofHint')}</small>
+          <small>{form.proofFileName || t('register.proofHint')}</small>
         </label>
-        <p className="note">{t('register.simulated')}</p>
+        <p className="muted small">{t('register.simulated')}</p>
         <div className="actions">
-          <button className="primary" type="submit">{t('register.submit')}</button>
-          <button type="button" className="secondary" onClick={() => setForm(DEMO)}>{t('register.demoFill')}</button>
+          <button className="button button-primary" type="submit">{t('register.submit')}</button>
+          <button type="button" className="button button-quiet" onClick={() => setForm(DEMO)}>{t('register.demoFill')}</button>
         </div>
       </form>
     </section>

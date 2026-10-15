@@ -21,12 +21,12 @@ export function ActivityPage({ state, update, reset }: Props) {
   }
 
   return (
-    <section>
+    <section className="page">
       <h1>{t('activity.title')}</h1>
-      <p className="note">{t('activity.localNote')}</p>
+      <p className="muted">{t('activity.localNote')}</p>
 
-      <h2>{t('activity.listings')}</h2>
-      <div className="table-wrap card">
+      <h2 className="section-title">{t('activity.listings')}</h2>
+      <div className="table-wrap">
         <table>
           <thead>
             <tr>
@@ -48,7 +48,7 @@ export function ActivityPage({ state, update, reset }: Props) {
                 <td><span className={`badge ${l.status}`}>{t(`activity.status.${l.status}` as MessageKey)}</span></td>
                 <td>
                   {l.status === 'active' && (
-                    <button type="button" className="link" onClick={() => sold(l.checkId, l.site)}>{t('activity.markSold')}</button>
+                    <button type="button" className="text-button" onClick={() => sold(l.checkId, l.site)}>{t('activity.markSold')}</button>
                   )}
                 </td>
               </tr>
@@ -57,11 +57,11 @@ export function ActivityPage({ state, update, reset }: Props) {
         </table>
       </div>
 
-      <h2>{t('activity.log')}</h2>
+      <h2 className="section-title">{t('activity.log')}</h2>
       {state.log.length === 0 ? (
-        <p className="note">{t('activity.empty')}</p>
+        <p className="muted">{t('activity.empty')}</p>
       ) : (
-        <div className="table-wrap card">
+        <div className="table-wrap">
           <table>
             <thead>
               <tr>
@@ -87,7 +87,7 @@ export function ActivityPage({ state, update, reset }: Props) {
 
       <button
         type="button"
-        className="secondary reset"
+        className="button button-quiet reset"
         onClick={() => {
           if (window.confirm(t('activity.resetConfirm'))) reset()
         }}

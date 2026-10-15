@@ -25,7 +25,7 @@ O fluxo completo está em [docs/fluxo.png](docs/fluxo.png).
 
 ## Idiomas
 
-Português, inglês e alemão, com seletor no topo da página. Os textos ficam em [`src/i18n.tsx`](src/i18n.tsx); o TypeScript acusa erro se faltar alguma tradução.
+Inglês (padrão), português e alemão, com seletor no topo da página. Os textos ficam em [`src/i18n.tsx`](src/i18n.tsx); o TypeScript acusa erro se faltar alguma tradução.
 
 ## Limitações do protótipo
 
