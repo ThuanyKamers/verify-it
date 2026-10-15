@@ -5,20 +5,22 @@ import { useAppState } from './lib/store'
 import { ActivityPage } from './pages/ActivityPage'
 import { CheckPage } from './pages/CheckPage'
 import { HowPage } from './pages/HowPage'
+import { MarketPage } from './pages/MarketPage'
 import { LoginPage } from './pages/LoginPage'
 import { ListingCopyPage } from './pages/ListingCopyPage'
 import { RegisterPage } from './pages/RegisterPage'
 
-type Route = 'check' | 'register' | 'how' | 'activity'
+type Route = 'check' | 'market' | 'register' | 'how' | 'activity'
 
 /** Telas de cada perfil; a primeira é a inicial. */
 const ROUTES_BY_ROLE: Record<Role, Route[]> = {
-  buyer: ['check', 'how'],
+  buyer: ['check', 'market', 'how'],
   seller: ['register', 'activity', 'how'],
 }
 
 const NAV: Record<Route, MessageKey> = {
   check: 'nav.check',
+  market: 'nav.market',
   register: 'nav.register',
   how: 'nav.how',
   activity: 'nav.activity',
@@ -117,6 +119,7 @@ export function App() {
       <main className="main">
         {!role && <LoginPage onLogin={login} />}
         {role && route === 'check' && <CheckPage {...app} />}
+        {role && route === 'market' && <MarketPage state={app.state} />}
         {role && route === 'register' && <RegisterPage {...app} />}
         {role && route === 'how' && <HowPage />}
         {role && route === 'activity' && <ActivityPage {...app} />}

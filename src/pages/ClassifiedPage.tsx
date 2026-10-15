@@ -1,6 +1,6 @@
 import { CarGallery } from '../components/CarGallery'
 import { useI18n } from '../i18n'
-import { mockDetails, SITE_NAMES, siteTheme } from '../lib/mockListing'
+import { describe, mockDetails, SITE_NAMES, siteTheme } from '../lib/mockListing'
 import { maskPlate } from '../lib/validation'
 import type { Listing } from '../lib/verify'
 import { listedWhen } from './MarketplacePage'
@@ -78,7 +78,7 @@ export function ClassifiedPage({ listing: l }: { listing: Listing }) {
 
         <section className="cl-section">
           <h2>{t('cl.description')}</h2>
-          <p>{t(d.description)}</p>
+          <p>{describe(d, t)}</p>
           <ul className="mp-features">
             {d.features.map((f) => <li key={f}>{t(f)}</li>)}
           </ul>

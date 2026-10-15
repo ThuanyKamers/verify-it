@@ -71,6 +71,7 @@ export function CheckPage({ state, update }: Props) {
         </div>
         <p className="muted small">{t('check.plateHint')}</p>
       </form>
+      <p className="browse-link"><a className="button" href="#/market">{t('check.browse')}</a></p>
 
       <div className="examples">
         <span>{t('check.examples')}</span>

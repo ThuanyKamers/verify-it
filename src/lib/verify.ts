@@ -5,8 +5,28 @@
 //   Vendedor: cadastra o link + dados do veículo + comprovante -> verificação -> ID único
 //   Comprador: cola o link que está vendo -> verificado / possível golpe / não verificado
 
+import type { MessageKey } from '../i18n'
 import { parseListingUrl } from './url'
 import { clean, isValidRenavam, isValidVin, normalizePlate, normalizeRenavam } from './validation'
+
+/** Dados do anúncio no marketplace do Verify It: o que o vendedor informa, mais detalhes de exemplo dos dados de demonstração. */
+export interface ListingAd {
+  price?: number
+  km?: number
+  city?: string
+  /** Descrição escrita pelo vendedor. */
+  descriptionText?: string
+  seller?: string
+  bodyColor?: string
+  transmission?: MessageKey
+  fuel?: MessageKey
+  exterior?: MessageKey
+  interior?: MessageKey
+  description?: MessageKey
+  features?: MessageKey[]
+  owners?: number
+  memberSince?: number
+}
 
 export interface Listing {
   checkId: string
@@ -22,6 +42,7 @@ export interface Listing {
   proofFileName: string
   createdAt: string
   status: 'active' | 'sold'
+  ad?: ListingAd
 }
 
 export interface Report {
@@ -57,6 +78,11 @@ export interface RegisterInput {
   model: string
   year: string
   proofFileName: string
+  /** Opcionais: dados para o marketplace do Verify It. */
+  price?: string
+  km?: string
+  city?: string
+  description?: string
 }
 
 export type RegisterError =
@@ -160,9 +186,20 @@ export function register(
     proofFileName: input.proofFileName.trim(),
     createdAt: now.toISOString(),
     status: 'active',
+    ad: buildAd(input),
   }
   const otherSites = active.filter((l) => sameVehicle(l, vehicle))
   return { ok: true, listing, otherSites }
+}
+
+function buildAd(input: RegisterInput): ListingAd | undefined {
+  const num = (value?: string) => {
+    const n = Number((value ?? '').replace(/\D/g, ''))
+    return Number.isFinite(n) && n > 0 ? n : undefined
+  }
+  const text = (value?: string) => value?.trim() || undefined
+  const ad: ListingAd = { price: num(input.price), km: num(input.km), city: text(input.city), descriptionText: text(input.description) }
+  return Object.values(ad).some((v) => v !== undefined) ? ad : undefined
 }
 
 export function check(state: AppState, input: { url: string; plate?: string }): CheckResult {

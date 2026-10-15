@@ -33,6 +33,13 @@ describe('cadastro do vendedor', () => {
     }
   })
 
+  it('guarda preço, km, cidade e descrição quando informados', () => {
+    const res = register(empty, { ...civic, price: '21.900', km: '62400', city: ' Berlin ', description: 'Single owner' }, new Date(), fixedId)
+    expect(res.ok && res.listing.ad).toEqual({ price: 21900, km: 62400, city: 'Berlin', descriptionText: 'Single owner' })
+    const bare = register(empty, civic, new Date(), fixedId)
+    expect(bare.ok && bare.listing.ad).toBeUndefined()
+  })
+
   it('lista todos os erros de formato de uma vez', () => {
     const res = register(empty, { ...civic, plate: 'X', vin: 'Y', renavam: '1', proofFileName: '' })
     expect(res.ok).toBe(false)
