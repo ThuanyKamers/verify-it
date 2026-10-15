@@ -9,6 +9,7 @@ import { MarketPage } from './pages/MarketPage'
 import { LoginPage } from './pages/LoginPage'
 import { ListingCopyPage } from './pages/ListingCopyPage'
 import { RegisterPage } from './pages/RegisterPage'
+import { VehiclePage } from './pages/VehiclePage'
 
 type Route = 'check' | 'market' | 'register' | 'how' | 'activity'
 
@@ -29,8 +30,14 @@ const NAV: Record<Route, MessageKey> = {
 function readRoute(role: Role | null): Route {
   if (!role) return 'check'
   const routes = ROUTES_BY_ROLE[role]
-  const hash = window.location.hash.replace(/^#\/?/, '')
+  const hash = window.location.hash.replace(/^#\/?/, '').replace(/^market\/.*/, 'market')
   return (routes as string[]).includes(hash) ? (hash as Route) : routes[0]
+}
+
+/** Anúncio no marketplace do Verify It: `#/market/{checkId}`. */
+function readVehicleId(): string | null {
+  const m = window.location.hash.match(/^#\/market\/([\w-]+)$/)
+  return m ? m[1] : null
 }
 
 /** Página-cópia do marketplace: `#/listing/{checkId}`, aberta sem login. */
@@ -44,11 +51,13 @@ export function App() {
   const [role, setRole] = useState<Role | null>(loadRole)
   const [route, setRoute] = useState<Route>(() => readRoute(role))
   const [listingId, setListingId] = useState<string | null>(readListingId)
+  const [vehicleId, setVehicleId] = useState<string | null>(readVehicleId)
   const app = useAppState()
 
   useEffect(() => {
     const onHash = () => {
       setListingId(readListingId())
+      setVehicleId(readVehicleId())
       setRoute(readRoute(role))
       window.scrollTo(0, 0)
     }
@@ -119,7 +128,7 @@ export function App() {
       <main className="main">
         {!role && <LoginPage onLogin={login} />}
         {role && route === 'check' && <CheckPage {...app} />}
-        {role && route === 'market' && <MarketPage state={app.state} />}
+        {role && route === 'market' && (vehicleId ? <VehiclePage key={vehicleId} state={app.state} checkId={vehicleId} /> : <MarketPage state={app.state} />)}
         {role && route === 'register' && <RegisterPage {...app} />}
         {role && route === 'how' && <HowPage />}
         {role && route === 'activity' && <ActivityPage {...app} />}

@@ -1,0 +1,131 @@
+/* Cópia do leboncoin: fundo branco, laranja nos botões principais, azul-marinho no secundário, cantos bem arredondados. */
+.lbc { --lbc-orange: #ec5a13; --lbc-orange-dark: #d24d0c; --lbc-navy: #0d3c6e; --lbc-text: #1a1a1a; --lbc-sub: #4f565f; --lbc-line: #ccd0d5; --lbc-soft: #f1f5f9; --lbc-green: #1b6b3a; min-height: 100vh; background: #fff; color: var(--lbc-text); font: 400 0.95rem/1.5 system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
+.lbc h1, .lbc h2 { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; letter-spacing: 0; color: var(--lbc-text); }
+.lbc a { color: var(--lbc-text); }
+.lbc .mp-demo a { color: #fff; }
+.lbc-icon { flex: none; width: 1.15em; height: 1.15em; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.lbc-wrap { max-width: 67rem; margin: 0 auto; padding: 0 1rem; }
+
+.lbc-top { border-bottom: 1px solid var(--lbc-line); }
+.lbc-top-row { display: flex; align-items: center; gap: 1.25rem; padding-top: 0.6rem; padding-bottom: 0.4rem; }
+.lbc-logo { color: var(--lbc-orange); font: 800 2.1rem/1 system-ui, sans-serif; letter-spacing: -0.04em; }
+.lbc-publish { display: inline-flex; align-items: center; gap: 0.5rem; min-height: 2.75rem; padding: 0 1rem; border: 0; border-radius: 12px; background: var(--lbc-orange); color: #fff; font: 700 1rem system-ui, sans-serif; white-space: nowrap; cursor: pointer; }
+.lbc-search { position: relative; flex: 1; min-width: 10rem; }
+.lbc-search input { width: 100%; min-height: 2.75rem; padding: 0 3rem 0 1rem; border: 0; border-radius: 12px; background: #eef1f4; font: inherit; font-size: 1rem; }
+.lbc-search-btn { position: absolute; top: 50%; right: 0.4rem; display: grid; place-items: center; width: 2rem; height: 2rem; margin-top: -1rem; border-radius: 8px; background: var(--lbc-orange); color: #fff; }
+.lbc-tools { display: flex; gap: 0.25rem; }
+.lbc-tools a { display: grid; justify-items: center; gap: 0.1rem; min-width: 4.5rem; padding: 0.2rem; font-size: 0.75rem; text-decoration: none; }
+.lbc-tools .lbc-icon { width: 1.5rem; height: 1.5rem; }
+.lbc-cats { display: flex; flex-wrap: wrap; gap: 0 0.4rem; padding-top: 0.4rem; padding-bottom: 0.6rem; }
+.lbc-cats a { display: inline-flex; align-items: center; min-height: 2.25rem; font-size: 0.875rem; text-decoration: none; }
+.lbc-cats a:not(:last-child)::after { content: '·'; margin-left: 0.6rem; color: var(--lbc-sub); }
+.lbc-cats a:hover { text-decoration: underline; }
+.lbc .lbc-deals { font-weight: 700; }
+
+.lbc-sticky { position: fixed; top: 0; right: 0; left: 0; z-index: 20; background: #fff; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); transform: translateY(-110%); transition: transform 0.2s; }
+.lbc-sticky.on { transform: none; }
+.lbc-sticky-row { display: flex; align-items: center; gap: 0.75rem; padding-top: 0.4rem; padding-bottom: 0.4rem; }
+.lbc-sticky-thumb { flex: none; width: 2.5rem; height: 3.5rem; overflow: hidden; }
+.lbc-sticky-thumb > * { display: block; width: 100%; height: 100%; }
+.lbc-sticky-thumb .vehicle-photo, .lbc-sticky-thumb .car-art { object-fit: cover; }
+.lbc-sticky-text { display: grid; margin-right: auto; font-weight: 600; line-height: 1.35; }
+.lbc-heart { display: grid; place-items: center; width: 2.75rem; height: 2.75rem; border: 0; background: none; cursor: pointer; }
+
+.lbc-crumb { display: flex; flex-wrap: wrap; align-items: center; gap: 0.3rem; margin: 1.5rem 0 1.25rem; font-size: 0.8rem; }
+.lbc-crumb a { text-decoration: underline; }
+.lbc-crumb .lbc-icon { width: 0.9rem; height: 0.9rem; }
+.lbc-grid { display: grid; grid-template-columns: minmax(0, 1fr) 22rem; gap: 2rem; align-items: start; padding-bottom: 4rem; }
+.lbc-main { min-width: 0; }
+
+.lbc-gallery { position: relative; display: grid; grid-template-columns: 1fr 1.05fr 1fr; gap: 0.5rem; height: 24rem; }
+.lbc-gallery-one { grid-template-columns: 1fr; }
+.lbc-tile { overflow: hidden; background: #e9ecef; }
+.lbc-tile > * { display: block; width: 100%; height: 100%; }
+.lbc-tile .vehicle-photo { object-fit: cover; }
+.lbc-tile .car-art { object-fit: cover; height: 100%; }
+.lbc-tile:first-child { border-radius: 16px 0 0 16px; }
+.lbc-tile:last-of-type { border-radius: 0 16px 16px 0; }
+.lbc-gallery-one .lbc-tile { border-radius: 16px; }
+.lbc-pill { position: absolute; bottom: 1rem; display: inline-flex; align-items: center; gap: 0.5rem; min-height: 2.75rem; padding: 0 1rem; border: 0; border-radius: 999px; font: 700 1rem system-ui, sans-serif; cursor: pointer; }
+.lbc-similar { left: 1rem; background: var(--lbc-navy); color: #fff; }
+.lbc-see { right: 1rem; min-height: 2.5rem; background: #fff; color: var(--lbc-text); font-weight: 600; }
+.lbc-gallery-actions { position: absolute; top: 1rem; right: 1rem; display: flex; gap: 0.5rem; }
+.lbc-round { display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem; min-width: 2.75rem; height: 2.75rem; padding: 0 0.8rem; border: 0; border-radius: 999px; background: #fff; color: var(--lbc-text); font: 600 1rem system-ui, sans-serif; cursor: pointer; }
+.lbc-credit { margin: 0.4rem 0 0; color: var(--lbc-sub); font-size: 0.75rem; }
+.lbc-credit a { color: inherit; }
+
+.lbc-head { display: grid; justify-items: start; gap: 0.6rem; padding: 1.75rem 0 1.5rem; border-bottom: 1px solid var(--lbc-line); }
+.lbc-head h1 { margin: 0 0 0.5rem; font-size: 1.3rem; font-weight: 700; }
+.lbc-line { margin: 0; font-size: 1rem; }
+.lbc-price { display: inline-flex; align-items: center; gap: 0.5rem; margin: 0.5rem 0 0; color: var(--lbc-green); font-size: 1.35rem; font-weight: 700; }
+.lbc-under { display: inline-flex; align-items: center; gap: 0.35rem; min-height: 2.25rem; font-size: 0.85rem; font-weight: 600; text-decoration: underline; }
+.lbc-strong { font-size: 1rem; }
+.lbc-link-btn { padding: 0; border: 0; background: none; color: var(--lbc-text); font-family: inherit; cursor: pointer; }
+.lbc-date { margin: 0; color: var(--lbc-sub); font-size: 0.8rem; }
+.lbc-secure-tag { display: inline-flex; align-items: center; gap: 0.35rem; margin: 0; padding: 0.15rem 0.5rem; border-radius: 4px; background: #e6f0fb; color: var(--lbc-navy); font-size: 0.8rem; font-weight: 700; }
+
+.lbc-section { padding: 2rem 1rem; border-bottom: 1px solid var(--lbc-line); }
+.lbc-section h2 { margin: 0 0 1.1rem; font-size: 1.2rem; font-weight: 700; }
+.lbc-section > p { margin: 0 0 0.6rem; }
+.lbc-bullets { display: grid; gap: 0.5rem; margin: 0 0 0.75rem; padding: 0; list-style: none; }
+.lbc-bullets li { display: flex; gap: 0.6rem; }
+.lbc-bullets .lbc-icon { margin-top: 0.2em; }
+.lbc-info { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem 2rem; margin: 0; }
+.lbc-info div { display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 0.5rem; }
+.lbc-info dt { display: flex; align-items: center; gap: 0.5rem; color: var(--lbc-sub); font-size: 0.8rem; }
+.lbc-info dd { margin: 0; font-weight: 700; font-size: 1rem; }
+.lbc-info-icon { display: grid; flex: none; place-items: center; width: 1.6rem; height: 1.6rem; border-radius: 50%; background: var(--lbc-soft); }
+.lbc-info-icon .lbc-icon { width: 1rem; height: 1rem; }
+.lbc-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 0; padding: 0; list-style: none; }
+.lbc-cards li { display: flex; gap: 0.9rem; padding: 1.25rem; border-radius: 16px; background: var(--lbc-soft); }
+.lbc-cards .lbc-icon { width: 1.5rem; height: 1.5rem; }
+.lbc-cards span { display: grid; }
+.lbc-cards strong { font-size: 1rem; }
+.lbc-desc { white-space: pre-line; font-size: 1rem; }
+.lbc-desc.clamp { display: -webkit-box; overflow: hidden; -webkit-line-clamp: 3; -webkit-box-orient: vertical; }
+.lbc-small { color: var(--lbc-sub); font-size: 0.85rem; }
+.lbc-field { display: grid; gap: 0.5rem; max-width: 26rem; margin-top: 1.25rem; font-size: 0.9rem; }
+.lbc-field-row { display: flex; justify-content: space-between; }
+.lbc-field-row strong { color: var(--lbc-navy); font-size: 1rem; }
+.lbc-input { display: flex; align-items: center; min-height: 2.75rem; padding: 0 1rem; border: 1px solid #8a9099; border-radius: 999px; }
+.lbc-input input { flex: 1; min-width: 0; border: 0; background: none; font: inherit; font-size: 1rem; outline: none; }
+.lbc-input:focus-within { outline: 3px solid var(--lbc-navy); outline-offset: 2px; }
+.lbc-field input[type='range'] { width: 100%; accent-color: var(--lbc-navy); }
+.lbc-rate { margin-top: 1.25rem !important; font-size: 1rem; }
+
+.lbc-side { position: sticky; top: 5rem; }
+.lbc-seller { display: grid; gap: 0.9rem; padding: 1.5rem; border-radius: 16px; background: #fff; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.14); }
+.lbc-seller-row { display: flex; align-items: center; gap: 1rem; }
+.lbc-seller-row > span:nth-child(2) { display: grid; flex: 1; font-size: 0.9rem; }
+.lbc-seller-row strong { font-size: 1.2rem; }
+.lbc-avatar { display: grid; flex: none; place-items: center; width: 4rem; height: 4rem; border-radius: 50%; background: #d63b2f; color: #fff; font-size: 1.6rem; }
+.lbc-reactive { display: inline-flex; justify-self: start; align-items: center; gap: 0.3rem; margin: 0; padding: 0.1rem 0.4rem; border-radius: 4px; background: #fde9e1; color: #a33a0b; font-size: 0.8rem; font-weight: 600; }
+.lbc-activity { display: flex; align-items: center; gap: 0.4rem; margin: 0; color: var(--lbc-sub); }
+.lbc-btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; min-height: 2.75rem; padding: 0 1.25rem; border: 0; border-radius: 999px; color: #fff; font: 700 1rem system-ui, sans-serif; white-space: nowrap; cursor: pointer; }
+.lbc-btn-orange { background: var(--lbc-orange); }
+.lbc-btn-orange:hover { background: var(--lbc-orange-dark); }
+.lbc-btn-navy { background: var(--lbc-navy); }
+.lbc-secure { display: flex; justify-content: center; align-items: center; gap: 0.4rem; margin: 0; font-size: 0.9rem; }
+
+@media (max-width: 56rem) {
+  .lbc-top-row { flex-wrap: wrap; gap: 0.5rem 0.75rem; }
+  .lbc-logo { font-size: 1.7rem; }
+  .lbc-search { order: 3; flex-basis: 100%; }
+  .lbc-tools { margin-left: auto; }
+  .lbc-tools span { display: none; }
+  .lbc-tools { gap: 0; }
+  .lbc-tools a { min-width: 2.75rem; min-height: 2.75rem; align-content: center; }
+  .lbc-publish { display: none; }
+  .lbc-cats { flex-wrap: nowrap; overflow-x: auto; }
+  .lbc-cats a { white-space: nowrap; }
+  .lbc-grid { grid-template-columns: 1fr; }
+  .lbc-side { position: static; }
+  .lbc-gallery { grid-template-columns: 1fr; height: 16rem; }
+  .lbc-gallery .lbc-tile:not(:first-child) { display: none; }
+  .lbc-gallery .lbc-tile:first-child { border-radius: 16px; }
+  .lbc-info, .lbc-cards { grid-template-columns: 1fr; }
+  .lbc-pill { bottom: 0.75rem; min-height: 2.5rem; padding: 0 0.75rem; font-size: 0.85rem; }
+  .lbc-similar { left: 0.75rem; }
+  .lbc-see { right: 0.75rem; }
+  .lbc-section { padding: 1.5rem 0; }
+}

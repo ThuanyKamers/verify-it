@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { VehicleImage } from '../components/VehicleImage'
 import { useI18n } from '../i18n'
-import { describe, listingHref, mockDetails, siteLabel, type MockDetails } from '../lib/mockListing'
+import { describe, mockDetails, type MockDetails } from '../lib/mockListing'
 import { CITIES, distanceKm, findCity } from '../lib/places'
 import { photoFor, vehicleKind, type VehicleKind, type VehiclePhoto } from '../lib/photos'
 import type { AppState, Listing } from '../lib/verify'
@@ -10,8 +10,6 @@ import '../market.css'
 interface Vehicle {
   listing: Listing
   details: MockDetails
-  /** Um anúncio por site, cada um com a sua página-cópia. */
-  sites: Listing[]
   kind: VehicleKind
   photo?: VehiclePhoto
 }
@@ -29,8 +27,7 @@ function vehicles(state: AppState): Vehicle[] {
   }
   return [...byPlate.values()].map((group) => {
     const listing = group.reduce((a, b) => (a.createdAt <= b.createdAt ? a : b))
-    const sites = [...group].sort((a, b) => siteLabel(a.site).localeCompare(siteLabel(b.site)))
-    return { listing, details: mockDetails(listing), sites, kind: vehicleKind(listing), photo: photoFor(listing) }
+    return { listing, details: mockDetails(listing), kind: vehicleKind(listing), photo: photoFor(listing) }
   })
 }
 
@@ -131,25 +128,18 @@ export function MarketPage({ state }: { state: AppState }) {
         <p className="market-empty">{t('mk.empty')}</p>
       ) : (
         <ul className="market-grid">
-          {shown.map(({ listing: l, details: d, sites, photo }) => (
+          {shown.map(({ listing: l, details: d, photo }) => (
             <li key={l.plate} className="car-card">
-              <a className="car-photo" href={listingHref(l)} target="_blank" rel="noopener noreferrer" aria-label={`${t('mk.view')}: ${l.make} ${l.model}`}>
+              <a className="car-photo" href={`#/market/${l.checkId}`} tabIndex={-1} aria-hidden="true">
                 <VehicleImage photo={photo} alt={`${l.make} ${l.model}`} body={d.bodyColor} sky={skyOf(l.plate)} />
               </a>
               <div className="car-body">
-                <h2>{l.make} {l.model}</h2>
+                <h2><a className="car-link" href={`#/market/${l.checkId}`}>{l.make} {l.model}</a></h2>
                 <p className="car-meta">{l.year} · {t('mk.km', { km: number.format(d.km) })} · {d.city}{place && !unknownPlace ? ` (${t('mk.away', { km: Math.round(distanceKm(place, d.city) ?? 0) })})` : ''}</p>
                 <p className="car-desc">{describe(d, t)}</p>
                 <p className="car-price">{euro.format(d.price)}</p>
+                <p className="car-verified"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7" /></svg>{t('vp.verified')}</p>
                 <p className="car-seller">{t('mk.seller', { name: d.seller })}</p>
-                <h3 className="car-sites-title" id={`sites-${l.checkId}`}>{t('mk.listedOn')}</h3>
-                <ul className="car-sites" aria-labelledby={`sites-${l.checkId}`}>
-                  {sites.map((s) => (
-                    <li key={s.checkId}>
-                      <a href={listingHref(s)} target="_blank" rel="noopener noreferrer">{siteLabel(s.site)}</a>
-                    </li>
-                  ))}
-                </ul>
               </div>
             </li>
           ))}
