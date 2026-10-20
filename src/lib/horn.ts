@@ -1,8 +1,29 @@
-// Buzina de carro sintetizada enquanto o botão esquerdo é segurado numa área livre da página.
+// Buzina de carro sintetizada ao clicar/segurar numa área livre da página.
 // Som gerado pela Web Audio API, sem arquivo de áudio.
 
 let ctx: AudioContext | null = null
-let voice: { stop: () => void } | null = null
+
+/** Cria (uma vez) o contexto de áudio. */
+function getContext(): AudioContext | null {
+  if (ctx) return ctx
+  const Ctor = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext
+  if (!Ctor) return null
+  try {
+    ctx = new Ctor()
+  } catch {
+    ctx = null
+  }
+  return ctx
+}
+
+// Navegadores só liberam áudio após um gesto do usuário. Destravamos o contexto no
+// primeiro clique (antes do mousedown que dispara a buzina) e a cada novo clique,
+// caso o navegador o suspenda por inatividade. Sem isso a buzina só sai depois de
+// vários cliques.
+function unlockAudio(): void {
+  const audio = getContext()
+  if (audio && audio.state === 'suspended') void audio.resume()
+}
 
 /** Curva de distorção suave (tanh) para dar o timbre metálico da buzina. */
 function brassCurve(amount: number): Float32Array<ArrayBuffer> {
@@ -15,78 +36,89 @@ function brassCurve(amount: number): Float32Array<ArrayBuffer> {
   return curve
 }
 
-/** Começa a buzina (dois tons de carro) e a mantém tocando até stop(). */
-function startHonk(): void {
-  if (voice) return
+interface Voice {
+  release: (at?: number) => void
+}
+
+// Duração mínima de uma buzinada: um toque rápido ainda soa por tempo suficiente.
+const MIN_SUSTAIN = 0.16
+const LEVEL = 0.2
+const MAX_VOICES = 3
+const voices: Voice[] = []
+
+/** Toca uma buzina (dois tons) que segura no volume até release(). Devolve a voz, ou null se não houver áudio. */
+function spawnVoice(): Voice | null {
+  const audio = getContext()
+  if (!audio) return null
   try {
-    const Ctor = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext
-    if (!Ctor) return
-    ctx = ctx ?? new Ctor()
-    if (ctx.state === 'suspended') void ctx.resume()
+    if (audio.state === 'suspended') void audio.resume()
+    const start = audio.currentTime
 
-    const now = ctx.currentTime
+    const drive = audio.createGain()
+    drive.gain.setValueAtTime(0.0001, start)
+    drive.gain.exponentialRampToValueAtTime(LEVEL, start + 0.01)
 
-    // Envelope/ataque: sobe rápido e segura (buzina mantida enquanto o botão fica pressionado).
-    const drive = ctx.createGain()
-    drive.gain.setValueAtTime(0.0001, now)
-    drive.gain.exponentialRampToValueAtTime(0.22, now + 0.012)
-
-    const shaper = ctx.createWaveShaper()
+    const shaper = audio.createWaveShaper()
     shaper.curve = brassCurve(2.2)
 
-    const lowpass = ctx.createBiquadFilter()
+    const lowpass = audio.createBiquadFilter()
     lowpass.type = 'lowpass'
     lowpass.frequency.value = 3800
     lowpass.Q.value = 0.6
 
-    const out = ctx.createGain()
-    out.gain.value = 0.45
+    const out = audio.createGain()
+    out.gain.value = 0.33
 
     drive.connect(shaper)
     shaper.connect(lowpass)
     lowpass.connect(out)
-    out.connect(ctx.destination)
+    out.connect(audio.destination)
 
-    // Dois tons a uma terça (≈ buzina de carro), cada um dobrado e levemente desafinado para encorpar.
     const oscs: OscillatorNode[] = []
     for (const base of [440, 554.37]) {
       for (const detune of [-5, 5]) {
-        const osc = ctx.createOscillator()
+        const osc = audio.createOscillator()
         osc.type = 'sawtooth'
         osc.frequency.value = base
         osc.detune.value = detune
         osc.connect(drive)
-        osc.start(now)
+        osc.start(start)
         oscs.push(osc)
       }
     }
 
-    voice = {
-      stop: () => {
-        if (!ctx) return
-        const t = ctx.currentTime
+    let released = false
+    const voice: Voice = {
+      release: (at = audio.currentTime) => {
+        if (released) return
+        released = true
+        // Garante a duração mínima mesmo quando o botão é solto num toque rápido.
+        const t = Math.max(at, start + MIN_SUSTAIN)
         drive.gain.cancelScheduledValues(t)
-        drive.gain.setValueAtTime(Math.max(drive.gain.value, 0.0001), t)
-        drive.gain.exponentialRampToValueAtTime(0.0001, t + 0.06)
-        for (const osc of oscs) osc.stop(t + 0.09)
-        voice = null
+        drive.gain.setValueAtTime(LEVEL, t)
+        drive.gain.exponentialRampToValueAtTime(0.0001, t + 0.05)
+        for (const osc of oscs) osc.stop(t + 0.07)
+        const i = voices.indexOf(voice)
+        if (i >= 0) voices.splice(i, 1)
       },
     }
+    voices.push(voice)
+    // Limita vozes simultâneas: cliques muito rápidos soltam a mais antiga.
+    while (voices.length > MAX_VOICES) voices[0].release()
+    return voice
   } catch {
-    // Sem áudio disponível: segue sem buzina.
-    voice = null
+    return null
   }
-}
-
-function stopHonk(): void {
-  voice?.stop()
 }
 
 const INTERACTIVE = 'a, button, input, textarea, select, label, summary, dialog, [role="button"], [contenteditable]'
 const TEXTUAL = 'p, h1, h2, h3, h4, h5, h6, li, dt, dd, code, strong, em, small, figcaption, span'
 
-/** Liga a buzina: segurar o botão esquerdo numa área livre (fora de botões, links, campos e texto) buzina até soltar. */
+/** Liga a buzina: clicar numa área livre dá uma buzinada; segurar buzina até soltar. */
 export function startHorn(): () => void {
+  // A voz do clique atual (enquanto o botão está pressionado).
+  let held: Voice | null = null
+
   const onDown = (e: MouseEvent) => {
     if (e.button !== 0 || e.defaultPrevented) return
     const target = e.target as Element | null
@@ -94,15 +126,27 @@ export function startHorn(): () => void {
     if (target.closest(INTERACTIVE) || target.closest(TEXTUAL)) return
     const selection = window.getSelection?.()
     if (selection && selection.type === 'Range' && !selection.isCollapsed) return
-    startHonk()
+    held = spawnVoice()
   }
+  const onUp = () => {
+    held?.release()
+    held = null
+  }
+  const onBlur = () => {
+    held = null
+    for (const voice of [...voices]) voice.release()
+  }
+
+  // Destrava o áudio em qualquer clique (fase de captura, antes do mousedown acima).
+  document.addEventListener('pointerdown', unlockAudio, true)
   document.addEventListener('mousedown', onDown)
-  window.addEventListener('mouseup', stopHonk)
-  window.addEventListener('blur', stopHonk)
+  window.addEventListener('mouseup', onUp)
+  window.addEventListener('blur', onBlur)
   return () => {
+    document.removeEventListener('pointerdown', unlockAudio, true)
     document.removeEventListener('mousedown', onDown)
-    window.removeEventListener('mouseup', stopHonk)
-    window.removeEventListener('blur', stopHonk)
-    stopHonk()
+    window.removeEventListener('mouseup', onUp)
+    window.removeEventListener('blur', onBlur)
+    onBlur()
   }
 }
