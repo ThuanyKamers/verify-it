@@ -3,7 +3,10 @@
 // descrição) é inventado aqui, por modelo, e é todo fictício.
 
 import type { MessageKey } from '../i18n'
+import { MARKET_SITE } from './market'
 import type { Listing } from './verify'
+
+export { MARKET_SITE, marketUrl } from './market'
 
 export interface MockDetails {
   price: number
@@ -60,14 +63,6 @@ export function describe(d: MockDetails, t: (key: MessageKey) => string): string
 }
 
 export type SiteTheme = 'verifyit' | 'facebook' | 'kleinanzeigen' | 'mobilede' | 'autoscout24' | 'standvirtual' | 'leboncoin' | 'olx' | 'webmotors' | 'mercadolivre' | 'generic'
-
-/** Domínio do marketplace do próprio Verify It (GitHub Pages). */
-export const MARKET_SITE = 'thuanykamers.github.io'
-
-/** Link público de um anúncio no marketplace do Verify It. */
-export function marketUrl(checkId: string): string {
-  return `https://${MARKET_SITE}/verify-it/#/market/${checkId}`
-}
 
 export const SITE_NAMES: Record<SiteTheme, string> = {
   verifyit: 'Verify It Marketplace',

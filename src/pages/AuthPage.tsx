@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { useI18n, type Lang } from '../i18n'
 import { getAuthProvider, isValidTwoFactorCode, type Account, type AuthErrorCode, type AuthResult } from '../lib/auth'
+import { missingDocuments, SELLER_DOCUMENTS, type DocumentFiles, type DocumentKind } from '../lib/documents'
 import type { Role } from '../lib/session'
 
 /** Textos da tela de conta, por idioma (recurso autocontido). */
@@ -17,10 +18,16 @@ const COPY: Record<Lang, Record<string, string>> = {
     code: 'Código de 6 dígitos',
     verify: 'Confirmar',
     back: 'Voltar',
+    docsTitle: 'Documentos do vendedor',
+    docsLead: 'Para anunciar, comprove sua identidade uma vez: identidade (frente e verso) e uma selfie segurando o documento. Ficam guardados na sua conta.',
+    docChoose: 'Enviar arquivo',
+    docReplace: 'Trocar',
+    docPending: 'Pendente',
     demo: 'Demonstração: a conta fica só no seu navegador; nenhuma senha é guardada e, no 2FA, qualquer código de 6 dígitos funciona.',
     'err.invalidEmail': 'E-mail inválido.',
     'err.weakPassword': 'A senha precisa de pelo menos 8 caracteres.',
     'err.emailInUse': 'Já existe uma conta com esse e-mail.',
+    'err.missingDocuments': 'Envie os documentos do vendedor para criar a conta.',
     'err.invalidCredentials': 'E-mail ou senha incorretos.',
     'err.invalidCode': 'Código inválido.',
     'err.generic': 'Não foi possível concluir. Tente de novo.',
@@ -37,10 +44,16 @@ const COPY: Record<Lang, Record<string, string>> = {
     code: '6-digit code',
     verify: 'Confirm',
     back: 'Back',
+    docsTitle: 'Seller documents',
+    docsLead: 'To list a vehicle, prove your identity once: your ID (front and back) and a selfie holding it. They are kept on your account.',
+    docChoose: 'Upload file',
+    docReplace: 'Replace',
+    docPending: 'Missing',
     demo: 'Demo: your account stays in this browser; no password is stored and, for 2FA, any 6-digit code works.',
     'err.invalidEmail': 'Invalid email.',
     'err.weakPassword': 'Password must be at least 8 characters.',
     'err.emailInUse': 'An account with this email already exists.',
+    'err.missingDocuments': 'Upload the seller documents to create the account.',
     'err.invalidCredentials': 'Wrong email or password.',
     'err.invalidCode': 'Invalid code.',
     'err.generic': 'Could not complete. Please try again.',
@@ -57,10 +70,16 @@ const COPY: Record<Lang, Record<string, string>> = {
     code: '6-stelliger Code',
     verify: 'Bestätigen',
     back: 'Zurück',
+    docsTitle: 'Verkäufer-Dokumente',
+    docsLead: 'Um zu inserieren, weisen Sie Ihre Identität einmal nach: Ausweis (Vorder- und Rückseite) und ein Selfie mit dem Ausweis. Sie bleiben in Ihrem Konto.',
+    docChoose: 'Datei hochladen',
+    docReplace: 'Ersetzen',
+    docPending: 'Fehlt',
     demo: 'Demo: Ihr Konto bleibt in diesem Browser; es wird kein Passwort gespeichert und bei 2FA funktioniert jeder 6-stellige Code.',
     'err.invalidEmail': 'Ungültige E-Mail.',
     'err.weakPassword': 'Das Passwort braucht mindestens 8 Zeichen.',
     'err.emailInUse': 'Mit dieser E-Mail existiert bereits ein Konto.',
+    'err.missingDocuments': 'Laden Sie die Verkäufer-Dokumente hoch, um das Konto zu erstellen.',
     'err.invalidCredentials': 'E-Mail oder Passwort falsch.',
     'err.invalidCode': 'Ungültiger Code.',
     'err.generic': 'Konnte nicht abgeschlossen werden. Bitte erneut versuchen.',
@@ -79,10 +98,16 @@ export function AuthPage({ onAuthenticated }: { onAuthenticated: (account: Accou
   const [password, setPassword] = useState('')
   const [role, setRole] = useState<Role>('buyer')
   const [enable2fa, setEnable2fa] = useState(false)
+  const [documents, setDocuments] = useState<DocumentFiles>({})
   const [challengeId, setChallengeId] = useState<string | null>(null)
   const [code, setCode] = useState('')
   const [error, setError] = useState<AuthErrorCode | null>(null)
   const [busy, setBusy] = useState(false)
+
+  // O vendedor comprova a identidade no cadastro; o comprador não precisa.
+  const needDocs = mode === 'signup' && role === 'seller'
+  const docsMissing = missingDocuments(documents, SELLER_DOCUMENTS)
+  const setDocument = (kind: DocumentKind, fileName: string) => setDocuments((d) => ({ ...d, [kind]: fileName }))
 
   function resolve(res: AuthResult) {
     setBusy(false)
@@ -97,7 +122,7 @@ export function AuthPage({ onAuthenticated }: { onAuthenticated: (account: Accou
     setBusy(true)
     const res =
       mode === 'signup'
-        ? await auth.signUp({ name, email, password, role, enableTwoFactor: enable2fa })
+        ? await auth.signUp({ name, email, password, role, enableTwoFactor: enable2fa, documents: role === 'seller' ? documents : undefined })
         : await auth.signIn({ email, password })
     resolve(res)
   }
@@ -200,8 +225,40 @@ export function AuthPage({ onAuthenticated }: { onAuthenticated: (account: Accou
           </label>
         )}
 
+        {needDocs && (
+          <fieldset className="docs">
+            <legend>{c.docsTitle}</legend>
+            <p className="docs-lead">{c.docsLead}</p>
+            <ul className="docs-list">
+              {SELLER_DOCUMENTS.map((kind) => {
+                const file = documents[kind]
+                return (
+                  <li key={kind} className={file ? 'doc doc-done' : 'doc'}>
+                    <span className="doc-mark" aria-hidden="true">{file ? '✓' : ''}</span>
+                    <div className="doc-text">
+                      <strong>{t(`doc.${kind}`)}</strong>
+                      <small>{file ?? t(`doc.${kind}.hint`)}</small>
+                    </div>
+                    <label className="button button-quiet doc-upload">
+                      {file ? c.docReplace : c.docChoose}
+                      <span className="visually-hidden">: {t(`doc.${kind}`)}</span>
+                      <input
+                        type="file"
+                        className="visually-hidden"
+                        accept={kind === 'selfie' ? 'image/*' : 'application/pdf,image/*'}
+                        capture={kind === 'selfie' ? 'user' : undefined}
+                        onChange={(e) => setDocument(kind, e.target.files?.[0]?.name ?? '')}
+                      />
+                    </label>
+                  </li>
+                )
+              })}
+            </ul>
+          </fieldset>
+        )}
+
         {errorText && <p className="muted small" role="alert">{errorText}</p>}
-        <button type="submit" disabled={busy}>{mode === 'signup' ? c.submitSignup : c.submitSignin}</button>
+        <button type="submit" disabled={busy || (needDocs && docsMissing.length > 0)}>{mode === 'signup' ? c.submitSignup : c.submitSignin}</button>
         <p className="muted small">{c.demo}</p>
       </form>
     </section>

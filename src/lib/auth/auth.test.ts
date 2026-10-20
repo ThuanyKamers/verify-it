@@ -22,6 +22,7 @@ const signUp = (over: Partial<SignUpInput> = {}): SignUpInput => ({
   email: 'fulana@example.com',
   password: 'senhaforte1',
   role: 'seller',
+  documents: { idFront: 'id-front.jpg', idBack: 'id-back.jpg', selfie: 'selfie.jpg' },
   ...over,
 })
 
@@ -51,6 +52,23 @@ describe('mockAuth: cadastro e login locais', () => {
     await mockAuth.signUp(signUp())
     const dup = await mockAuth.signUp(signUp())
     expect(dup).toEqual({ status: 'error', error: 'emailInUse' })
+  })
+
+  it('vendedor precisa enviar os documentos pessoais no cadastro', async () => {
+    const res = await mockAuth.signUp(signUp({ documents: {} }))
+    expect(res).toEqual({ status: 'error', error: 'missingDocuments' })
+  })
+
+  it('guarda os documentos pessoais do vendedor na conta', async () => {
+    await mockAuth.signUp(signUp())
+    const current = await mockAuth.currentAccount()
+    expect(current?.documents).toEqual({ idFront: 'id-front.jpg', idBack: 'id-back.jpg', selfie: 'selfie.jpg' })
+  })
+
+  it('comprador não precisa de documentos', async () => {
+    const res = await mockAuth.signUp(signUp({ role: 'buyer', email: 'compra@example.com', documents: {} }))
+    expect(res.status).toBe('ok')
+    if (res.status === 'ok') expect(res.account.documents).toBeUndefined()
   })
 
   it('login com e-mail desconhecido falha', async () => {
