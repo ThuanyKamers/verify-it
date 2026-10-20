@@ -36,8 +36,8 @@ afterEach(() => {
 })
 
 describe('mockAuth: cadastro e login locais', () => {
-  it('cadastra, mantém a sessão e nunca guarda senha', async () => {
-    const result = await mockAuth.signUp(signUp())
+  it('comprador cadastra, mantém a sessão e nunca guarda senha', async () => {
+    const result = await mockAuth.signUp(signUp({ role: 'buyer', documents: {} }))
     expect(result.status).toBe('ok')
     const current = await mockAuth.currentAccount()
     expect(current?.email).toBe('fulana@example.com')
@@ -60,9 +60,11 @@ describe('mockAuth: cadastro e login locais', () => {
   })
 
   it('guarda os documentos pessoais do vendedor na conta', async () => {
-    await mockAuth.signUp(signUp())
-    const current = await mockAuth.currentAccount()
-    expect(current?.documents).toEqual({ idFront: 'id-front.jpg', idBack: 'id-back.jpg', selfie: 'selfie.jpg' })
+    const res = await mockAuth.signUp(signUp())
+    expect(res.status).toBe('ok')
+    if (res.status === 'ok') {
+      expect(res.account.documents).toEqual({ idFront: 'id-front.jpg', idBack: 'id-back.jpg', selfie: 'selfie.jpg' })
+    }
   })
 
   it('comprador não precisa de documentos', async () => {
@@ -77,9 +79,57 @@ describe('mockAuth: cadastro e login locais', () => {
   })
 
   it('signOut encerra a sessão', async () => {
-    await mockAuth.signUp(signUp())
+    await mockAuth.signUp(signUp({ role: 'buyer', documents: {} }))
     await mockAuth.signOut()
     expect(await mockAuth.currentAccount()).toBeNull()
+  })
+})
+
+describe('mockAuth: análise dos documentos do vendedor', () => {
+  it('vendedor entra mesmo em análise (a análise só libera a publicação, não o acesso)', async () => {
+    const res = await mockAuth.signUp(signUp({ notifyBy: 'email' }))
+    expect(res.status).toBe('ok')
+    if (res.status === 'ok') {
+      expect(res.account.verification).toBe('pending')
+      expect(res.account.notifyBy).toBe('email')
+    }
+    // Entrou: a sessão já começou mesmo com os documentos em análise.
+    expect((await mockAuth.currentAccount())?.email).toBe('fulana@example.com')
+  })
+
+  it('guarda o canal de aviso por SMS com o celular', async () => {
+    const res = await mockAuth.signUp(signUp({ notifyBy: 'sms', phone: '+55 11 90000-0000' }))
+    expect(res.status === 'ok' && res.account.notifyBy).toBe('sms')
+    if (res.status === 'ok') expect(res.account.phone).toBe('+55 11 90000-0000')
+  })
+
+  it('aprovar a conta atualiza a verificação para approved', async () => {
+    const res = await mockAuth.signUp(signUp())
+    if (res.status !== 'ok') throw new Error('esperava ok')
+    const done = await mockAuth.completeVerification!({ accountId: res.account.id, decision: 'approved' })
+    expect(done?.verification).toBe('approved')
+    // A conta guardada reflete a decisão.
+    expect((await mockAuth.currentAccount())?.verification).toBe('approved')
+  })
+
+  it('recusar a conta marca rejected e pede novos documentos', async () => {
+    const res = await mockAuth.signUp(signUp())
+    if (res.status !== 'ok') throw new Error('esperava ok')
+    const done = await mockAuth.completeVerification!({ accountId: res.account.id, decision: 'rejected' })
+    expect(done?.verification).toBe('rejected')
+  })
+
+  it('completeVerification devolve null para conta inexistente', async () => {
+    const done = await mockAuth.completeVerification!({ accountId: 'nao-existe', decision: 'approved' })
+    expect(done).toBeNull()
+  })
+
+  it('login de vendedor em análise entra normalmente', async () => {
+    await mockAuth.signUp(signUp())
+    await mockAuth.signOut()
+    const res = await mockAuth.signIn({ email: 'fulana@example.com', password: 'senhaforte1' })
+    expect(res.status).toBe('ok')
+    if (res.status === 'ok') expect(res.account.verification).toBe('pending')
   })
 })
 

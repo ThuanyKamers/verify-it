@@ -93,25 +93,27 @@ export function RegisterPage({ state, update }: Props) {
 
   if (result?.ok) {
     const onMarket = result.listing.site === MARKET_SITE
+    // O anúncio nasce como rascunho: só é publicado depois de a conta e o veículo
+    // serem aprovados (ver ActivityPage). Por isso não dizemos "verificado" aqui.
     return (
       <section className="page">
-        <article className="report report-verified">
-          <h2 className="stamp">{t('status.verified')}</h2>
-          <p className="report-body">{onMarket ? t('register.success.market') : t('register.success.body')}</p>
+        <article className="report report-draft">
+          <h2 className="stamp">{t('register.draft.stamp')}</h2>
+          <p className="report-body">{t('register.draft.body')}</p>
           <Leaders
             rows={[
               { label: t('result.checkId'), value: <code>{result.listing.checkId}</code> },
               { label: t('result.vehicle'), value: `${result.listing.make} ${result.listing.model} ${result.listing.year}` },
               { label: t('result.site'), value: onMarket ? t('register.where.market') : result.listing.site },
-              { label: t('result.verifiedOn'), value: new Date(result.listing.createdAt).toLocaleString(locale) },
+              { label: t('register.draft.created'), value: new Date(result.listing.createdAt).toLocaleString(locale) },
             ]}
           />
           {result.otherSites.length > 0 && (
             <p>{t('register.success.otherSites', { sites: result.otherSites.map((l) => l.site).join(', ') })}</p>
           )}
           <div className="actions">
-            {onMarket && <a className="button button-primary" href={`#/market/${result.listing.checkId}`}>{t('register.success.view')}</a>}
-            <button type="button" className={onMarket ? 'button button-quiet' : 'button button-primary'} onClick={restart}>{t('register.success.another')}</button>
+            <a className="button button-primary" href="#/activity">{t('register.draft.track')}</a>
+            <button type="button" className="button button-quiet" onClick={restart}>{t('register.success.another')}</button>
           </div>
         </article>
       </section>

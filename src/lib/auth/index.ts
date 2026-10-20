@@ -37,9 +37,11 @@ export type {
   AuthErrorCode,
   AuthProvider,
   AuthResult,
+  NotifyChannel,
   SignInInput,
   SignUpInput,
   TwoFactorChallenge,
   TwoFactorInput,
   TwoFactorMethod,
+  VerificationStatus,
 } from './types'

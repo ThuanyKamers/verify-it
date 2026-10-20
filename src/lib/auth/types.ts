@@ -6,6 +6,18 @@
 import type { DocumentFiles } from '../documents'
 import type { Role } from '../session'
 
+/**
+ * Situação da verificação dos documentos do vendedor:
+ *  - 'pending': enviados, aguardando a empresa confirmar que são reais;
+ *  - 'approved': confirmados, a conta está ativa;
+ *  - 'rejected': recusados, o vendedor precisa enviar outros documentos.
+ * O comprador não passa por isso.
+ */
+export type VerificationStatus = 'pending' | 'approved' | 'rejected'
+
+/** Canal pelo qual o vendedor quer receber o aviso do resultado da análise. */
+export type NotifyChannel = 'email' | 'sms'
+
 /** Conta de usuário. NUNCA carrega senha nem dado sensível. */
 export interface Account {
   id: string
@@ -20,6 +32,12 @@ export interface Account {
    * nomes dos arquivos). Só o vendedor tem; o comprador não precisa.
    */
   documents?: DocumentFiles
+  /** Situação da análise dos documentos do vendedor (ausente para comprador). */
+  verification?: VerificationStatus
+  /** Como o vendedor quer ser avisado do resultado (e-mail ou celular). */
+  notifyBy?: NotifyChannel
+  /** Celular para o aviso por SMS (quando notifyBy = 'sms'). */
+  phone?: string
 }
 
 export interface SignUpInput {
@@ -31,6 +49,10 @@ export interface SignUpInput {
   enableTwoFactor?: boolean
   /** Documentos pessoais do vendedor (identidade frente/verso e selfie). */
   documents?: DocumentFiles
+  /** Como o vendedor quer ser avisado do resultado da análise. */
+  notifyBy?: NotifyChannel
+  /** Celular para o aviso por SMS (quando notifyBy = 'sms'). */
+  phone?: string
 }
 
 export interface SignInInput {
@@ -64,7 +86,9 @@ export type AuthErrorCode =
 
 /**
  * Resultado de uma operação de auth:
- *  - 'ok': autenticado.
+ *  - 'ok': autenticado. O vendedor entra mesmo com os documentos em análise
+ *    (veja `account.verification`); o que a análise libera é a PUBLICAÇÃO do
+ *    anúncio, não o acesso à conta.
  *  - 'two_factor': falta confirmar o segundo fator (chamar verifyTwoFactor).
  *  - 'error': falhou (ver `error`).
  */
@@ -89,6 +113,13 @@ export interface AuthProvider {
   signOut(): Promise<void>
   /** Conta da sessão atual, ou null se ninguém está logado. */
   currentAccount(): Promise<Account | null>
+  /**
+   * Conclui a análise dos documentos de UM vendedor (aprova ou recusa) e devolve
+   * a conta atualizada. No back-end real quem faz isso é a empresa, e o aviso sai
+   * por e-mail/SMS; aqui existe só para demonstrar o fluxo sem back-end. Opcional:
+   * o remoto não expõe (é do servidor).
+   */
+  completeVerification?(input: { accountId: string; decision: Exclude<VerificationStatus, 'pending'> }): Promise<Account | null>
 }
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/

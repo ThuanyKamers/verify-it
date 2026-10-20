@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { MARKET_SITE, marketUrl } from './market'
 import { DEMO_DOCUMENTS, DEMO_URLS, seedState } from './seed'
 import { renavamCheckDigit } from './validation'
-import { addReport, check, markSold, register, type AppState, type RegisterInput } from './verify'
+import { addReport, check, markSold, publishListing, register, reviewVehicle, type AppState, type RegisterInput } from './verify'
 
 const civic: RegisterInput = {
   url: 'https://www.webmotors.com.br/comprar/honda/civic/123',
@@ -108,6 +108,69 @@ describe('cadastro do vendedor', () => {
     const res = register(state, { ...civic, url: 'https://olx.com.br/x', vin: 'SB1ZS3HE0M0123456' })
     expect(res.ok).toBe(false)
     if (!res.ok) expect(res.errors).toEqual(['dataMismatch'])
+  })
+})
+
+describe('publicação do anúncio: vendedor primeiro, depois veículo', () => {
+  function draft() {
+    const res = register(empty, { ...civic, market: true, url: '' }, new Date('2026-10-15T00:00:00Z'), fixedId)
+    if (!res.ok) throw new Error(res.errors.join(','))
+    return { state: { ...empty, listings: [res.listing] } as AppState, checkId: res.listing.checkId, url: res.listing.url }
+  }
+
+  it('o anúncio nasce como rascunho, com o veículo em análise', () => {
+    const { state, checkId } = draft()
+    const l = state.listings.find((x) => x.checkId === checkId)!
+    expect(l.status).toBe('draft')
+    expect(l.vehicleReview).toBe('pending')
+  })
+
+  it('o rascunho NÃO é verificável pelo comprador antes de publicar', () => {
+    const { state, url } = draft()
+    expect(check(state, { url }).status).not.toBe('verified')
+  })
+
+  it('NÃO aprova o veículo enquanto o vendedor não foi aprovado', () => {
+    const { state, checkId } = draft()
+    const res = reviewVehicle(state, checkId, 'approved', false)
+    expect(res.ok).toBe(false)
+    if (!res.ok) expect(res.error).toBe('sellerNotApproved')
+  })
+
+  it('NÃO publica enquanto o vendedor não foi aprovado', () => {
+    const { state, checkId } = draft()
+    const res = publishListing(state, checkId, false)
+    expect(res.ok).toBe(false)
+    if (!res.ok) expect(res.error).toBe('sellerNotApproved')
+  })
+
+  it('NÃO publica com o vendedor aprovado mas o veículo ainda pendente', () => {
+    const { state, checkId } = draft()
+    const res = publishListing(state, checkId, true)
+    expect(res.ok).toBe(false)
+    if (!res.ok) expect(res.error).toBe('vehicleNotApproved')
+  })
+
+  it('na ordem certa (vendedor, depois veículo) publica e fica verificável', () => {
+    const d = draft()
+    const approved = reviewVehicle(d.state, d.checkId, 'approved', true)
+    expect(approved.ok).toBe(true)
+    if (!approved.ok) return
+    expect(approved.listing.vehicleReview).toBe('approved')
+    const pub = publishListing(approved.state, d.checkId, true)
+    expect(pub.ok).toBe(true)
+    if (!pub.ok) return
+    expect(pub.listing.status).toBe('active')
+    expect(check(pub.state, { url: d.url }).status).toBe('verified')
+  })
+
+  it('recusar o veículo é sempre permitido e não publica', () => {
+    const d = draft()
+    const rej = reviewVehicle(d.state, d.checkId, 'rejected', false)
+    expect(rej.ok && rej.listing.vehicleReview).toBe('rejected')
+    const pub = publishListing(rej.ok ? rej.state : d.state, d.checkId, true)
+    expect(pub.ok).toBe(false)
+    if (!pub.ok) expect(pub.error).toBe('vehicleNotApproved')
   })
 })
 

@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { useI18n, type Lang } from '../i18n'
-import { getAuthProvider, isValidTwoFactorCode, type Account, type AuthErrorCode, type AuthResult } from '../lib/auth'
+import { getAuthProvider, isValidTwoFactorCode, type Account, type AuthErrorCode, type AuthResult, type NotifyChannel } from '../lib/auth'
 import { missingDocuments, SELLER_DOCUMENTS, type DocumentFiles, type DocumentKind } from '../lib/documents'
 import type { Role } from '../lib/session'
 
@@ -23,6 +23,10 @@ const COPY: Record<Lang, Record<string, string>> = {
     docChoose: 'Enviar arquivo',
     docReplace: 'Trocar',
     docPending: 'Pendente',
+    notifyTitle: 'Como quer receber o aviso da análise?',
+    notifyEmail: 'Por e-mail',
+    notifySms: 'Por SMS no celular',
+    phone: 'Celular (com DDD)',
     demo: 'Demonstração: a conta fica só no seu navegador; nenhuma senha é guardada e, no 2FA, qualquer código de 6 dígitos funciona.',
     'err.invalidEmail': 'E-mail inválido.',
     'err.weakPassword': 'A senha precisa de pelo menos 8 caracteres.',
@@ -49,6 +53,10 @@ const COPY: Record<Lang, Record<string, string>> = {
     docChoose: 'Upload file',
     docReplace: 'Replace',
     docPending: 'Missing',
+    notifyTitle: 'How do you want to hear the result?',
+    notifyEmail: 'By email',
+    notifySms: 'By SMS on your phone',
+    phone: 'Mobile number',
     demo: 'Demo: your account stays in this browser; no password is stored and, for 2FA, any 6-digit code works.',
     'err.invalidEmail': 'Invalid email.',
     'err.weakPassword': 'Password must be at least 8 characters.',
@@ -75,6 +83,10 @@ const COPY: Record<Lang, Record<string, string>> = {
     docChoose: 'Datei hochladen',
     docReplace: 'Ersetzen',
     docPending: 'Fehlt',
+    notifyTitle: 'Wie möchten Sie das Ergebnis erfahren?',
+    notifyEmail: 'Per E-Mail',
+    notifySms: 'Per SMS aufs Handy',
+    phone: 'Handynummer',
     demo: 'Demo: Ihr Konto bleibt in diesem Browser; es wird kein Passwort gespeichert und bei 2FA funktioniert jeder 6-stellige Code.',
     'err.invalidEmail': 'Ungültige E-Mail.',
     'err.weakPassword': 'Das Passwort braucht mindestens 8 Zeichen.',
@@ -99,6 +111,8 @@ export function AuthPage({ onAuthenticated }: { onAuthenticated: (account: Accou
   const [role, setRole] = useState<Role>('buyer')
   const [enable2fa, setEnable2fa] = useState(false)
   const [documents, setDocuments] = useState<DocumentFiles>({})
+  const [notifyBy, setNotifyBy] = useState<NotifyChannel>('email')
+  const [phone, setPhone] = useState('')
   const [challengeId, setChallengeId] = useState<string | null>(null)
   const [code, setCode] = useState('')
   const [error, setError] = useState<AuthErrorCode | null>(null)
@@ -122,7 +136,15 @@ export function AuthPage({ onAuthenticated }: { onAuthenticated: (account: Accou
     setBusy(true)
     const res =
       mode === 'signup'
-        ? await auth.signUp({ name, email, password, role, enableTwoFactor: enable2fa, documents: role === 'seller' ? documents : undefined })
+        ? await auth.signUp({
+            name,
+            email,
+            password,
+            role,
+            enableTwoFactor: enable2fa,
+            documents: role === 'seller' ? documents : undefined,
+            ...(role === 'seller' ? { notifyBy, phone: notifyBy === 'sms' ? phone : undefined } : {}),
+          })
         : await auth.signIn({ email, password })
     resolve(res)
   }
@@ -254,6 +276,26 @@ export function AuthPage({ onAuthenticated }: { onAuthenticated: (account: Accou
                 )
               })}
             </ul>
+          </fieldset>
+        )}
+
+        {needDocs && (
+          <fieldset className="docs">
+            <legend>{c.notifyTitle}</legend>
+            <label className="check">
+              <input type="radio" name="notifyBy" checked={notifyBy === 'email'} onChange={() => setNotifyBy('email')} />
+              {c.notifyEmail}
+            </label>
+            <label className="check">
+              <input type="radio" name="notifyBy" checked={notifyBy === 'sms'} onChange={() => setNotifyBy('sms')} />
+              {c.notifySms}
+            </label>
+            {notifyBy === 'sms' && (
+              <label className="field">
+                {c.phone}
+                <input type="tel" inputMode="tel" autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+55 11 90000-0000" />
+              </label>
+            )}
           </fieldset>
         )}
 

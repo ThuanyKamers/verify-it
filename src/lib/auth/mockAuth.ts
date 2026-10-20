@@ -13,6 +13,7 @@ import {
   type Account,
   type AuthProvider,
   type AuthResult,
+  type NotifyChannel,
   type SignInInput,
   type SignUpInput,
   type TwoFactorInput,
@@ -77,7 +78,10 @@ export const mockAuth: AuthProvider = {
     const accounts = readAccounts()
     if (accounts.some((a) => a.email === email)) return { status: 'error', error: 'emailInUse' }
 
-    const sellerDocs = input.role === 'seller' ? pickDocuments(docs, SELLER_DOCUMENTS) : {}
+    const isSeller = input.role === 'seller'
+    const sellerDocs = isSeller ? pickDocuments(docs, SELLER_DOCUMENTS) : {}
+    const notifyBy: NotifyChannel = input.notifyBy === 'sms' ? 'sms' : 'email'
+    const phone = input.phone?.trim()
     const account: Account = {
       id: newId(),
       name: input.name.trim(),
@@ -85,8 +89,13 @@ export const mockAuth: AuthProvider = {
       role: input.role,
       twoFactor: Boolean(input.enableTwoFactor),
       ...(Object.keys(sellerDocs).length ? { documents: sellerDocs } : {}),
+      // Vendedor entra "em análise" até a empresa confirmar os documentos.
+      ...(isSeller ? { verification: 'pending' as const, notifyBy } : {}),
+      ...(isSeller && notifyBy === 'sms' && phone ? { phone } : {}),
     }
     writeAccounts([...accounts, account])
+    // O vendedor entra mesmo em análise; o que a análise libera é a publicação
+    // do anúncio, não o acesso à conta.
     setCurrent(account.id)
     return { status: 'ok', account }
   },
@@ -118,6 +127,18 @@ export const mockAuth: AuthProvider = {
     pendingTwoFactor.delete(input.challengeId)
     setCurrent(account.id)
     return { status: 'ok', account }
+  },
+
+  // Demonstração: faz o papel da empresa que confere os documentos do vendedor.
+  // No back-end real isso acontece no servidor e o aviso sai por e-mail/SMS.
+  async completeVerification(input: { accountId: string; decision: 'approved' | 'rejected' }): Promise<Account | null> {
+    const accounts = readAccounts()
+    const idx = accounts.findIndex((a) => a.id === input.accountId)
+    if (idx < 0) return null
+    const account: Account = { ...accounts[idx], verification: input.decision }
+    accounts[idx] = account
+    writeAccounts(accounts)
+    return account
   },
 
   async signOut(): Promise<void> {

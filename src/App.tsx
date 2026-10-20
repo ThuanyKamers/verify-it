@@ -52,6 +52,7 @@ function readListingId(): string | null {
 export function App() {
   const { t, lang, setLang } = useI18n()
   const [role, setRole] = useState<Role | null>(loadRole)
+  const [account, setAccount] = useState<Account | null>(null)
   const [route, setRoute] = useState<Route>(() => readRoute(role))
   const [listingId, setListingId] = useState<string | null>(readListingId)
   const [vehicleId, setVehicleId] = useState<string | null>(readVehicleId)
@@ -59,6 +60,18 @@ export function App() {
 
   useEffect(() => startSmoothScroll(), [])
   useEffect(() => startHorn(), [])
+
+  // Recupera a conta da sessão (ex.: ao recarregar a página já logado).
+  useEffect(() => {
+    if (!role) return
+    let alive = true
+    void getAuthProvider().currentAccount().then((a) => {
+      if (alive) setAccount(a)
+    })
+    return () => {
+      alive = false
+    }
+  }, [role])
 
   useEffect(() => {
     const onHash = () => {
@@ -74,6 +87,7 @@ export function App() {
   function loginAccount(account: Account) {
     saveRole(account.role)
     setRole(account.role)
+    setAccount(account)
     const first = ROUTES_BY_ROLE[account.role][0]
     window.location.hash = `#/${first}`
     setRoute(first)
@@ -83,6 +97,7 @@ export function App() {
     void getAuthProvider().signOut()
     saveRole(null)
     setRole(null)
+    setAccount(null)
     window.location.hash = ''
   }
 
@@ -138,7 +153,7 @@ export function App() {
         {role && route === 'market' && (vehicleId ? <VehiclePage key={vehicleId} state={app.state} checkId={vehicleId} /> : <MarketPage state={app.state} />)}
         {role && route === 'register' && <RegisterPage {...app} />}
         {role && route === 'how' && <HowPage />}
-        {role && route === 'activity' && <ActivityPage {...app} />}
+        {role && route === 'activity' && <ActivityPage {...app} account={account} onAccountChange={setAccount} />}
       </main>
 
       <footer className="footer">{t('footer.prototype')}</footer>
