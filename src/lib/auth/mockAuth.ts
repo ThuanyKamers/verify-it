@@ -5,6 +5,7 @@
 // qualquer código de 6 dígitos. Não serve para produção — use o remoteAuth, com o
 // back-end validando senha e código no servidor.
 
+import { missingDocuments, pickDocuments, SELLER_DOCUMENTS } from '../documents'
 import {
   isStrongEnough,
   isValidEmail,
@@ -67,15 +68,23 @@ export const mockAuth: AuthProvider = {
     if (!isValidEmail(email)) return { status: 'error', error: 'invalidEmail' }
     if (!isStrongEnough(input.password)) return { status: 'error', error: 'weakPassword' }
 
+    // O vendedor comprova a identidade já no cadastro; o comprador não precisa.
+    const docs = input.documents ?? {}
+    if (input.role === 'seller' && missingDocuments(docs, SELLER_DOCUMENTS).length) {
+      return { status: 'error', error: 'missingDocuments' }
+    }
+
     const accounts = readAccounts()
     if (accounts.some((a) => a.email === email)) return { status: 'error', error: 'emailInUse' }
 
+    const sellerDocs = input.role === 'seller' ? pickDocuments(docs, SELLER_DOCUMENTS) : {}
     const account: Account = {
       id: newId(),
       name: input.name.trim(),
       email,
       role: input.role,
       twoFactor: Boolean(input.enableTwoFactor),
+      ...(Object.keys(sellerDocs).length ? { documents: sellerDocs } : {}),
     }
     writeAccounts([...accounts, account])
     setCurrent(account.id)

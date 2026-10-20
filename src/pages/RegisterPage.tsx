@@ -2,10 +2,12 @@ import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { Leaders } from '../components/Leaders'
 import { PlateInput } from '../components/PlateInput'
 import { useI18n, type MessageKey } from '../i18n'
+import { getAuthProvider } from '../lib/auth'
+import { MARKET_SITE } from '../lib/market'
 import type { useAppState } from '../lib/store'
 import { PLATES, renavamCheckDigit } from '../lib/validation'
 import { DEMO_DOCUMENTS } from '../lib/seed'
-import { appendLog, DOCUMENTS, missingDocuments, OPTIONAL_DOCUMENTS, register, type DocumentKind, type Listing, type RegisterError, type RegisterInput, type RegisterResult } from '../lib/verify'
+import { appendLog, missingDocuments, OPTIONAL_DOCUMENTS, register, VEHICLE_DOCUMENTS, type DocumentKind, type Listing, type RegisterError, type RegisterInput, type RegisterResult } from '../lib/verify'
 
 type Props = ReturnType<typeof useAppState>
 
@@ -22,10 +24,10 @@ const FIELDS_BY_ERROR: Partial<Record<RegisterError, string[]>> = {
   dataMismatch: ['plate', 'vin', 'renavam'],
 }
 
-const EMPTY: RegisterInput = { url: '', plate: '', vin: '', renavam: '', make: '', model: '', year: '', documents: {} }
+const EMPTY: RegisterInput = { market: true, url: '', plate: '', vin: '', renavam: '', make: '', model: '', year: '', documents: {} }
 
-/** Dados de exemplo: o mesmo Civic da demonstração, agora anunciado no Kleinanzeigen. */
-const DEMO: RegisterInput = {
+/** Dados de exemplo: um Civic anunciado no próprio marketplace do Verify It. */
+const DEMO: Omit<RegisterInput, 'market'> = {
   url: 'https://www.kleinanzeigen.de/s-anzeige/honda-civic-exl-2019/2845123456-216-3331',
   plate: 'B KM 4821',
   plateCountry: 'DE',
@@ -44,26 +46,38 @@ const DEMO: RegisterInput = {
 export function RegisterPage({ state, update }: Props) {
   const { t, locale } = useI18n()
   const [form, setForm] = useState<RegisterInput>(EMPTY)
+  const [seller, setSeller] = useState('')
   const [result, setResult] = useState<RegisterResult | null>(null)
   const alertRef = useRef<HTMLDivElement>(null)
+
+  // Nome do vendedor logado: aparece no anúncio do marketplace.
+  useEffect(() => {
+    let active = true
+    void getAuthProvider().currentAccount().then((account) => {
+      if (active && account) setSeller(account.name)
+    })
+    return () => { active = false }
+  }, [])
 
   // Depois de um envio recusado, leva o foco (e a tela) para a lista de erros.
   useEffect(() => {
     if (result && !result.ok) alertRef.current?.focus()
   }, [result])
 
+  const market = form.market === true
   const bad = new Set(result && !result.ok ? result.errors.flatMap((err) => FIELDS_BY_ERROR[err] ?? []) : [])
   const missingDocs = result && !result.ok ? (result.missing ?? []) : []
   const invalid = (field: string) => (bad.has(field) ? true : undefined)
 
-  const set = (field: Exclude<keyof RegisterInput, 'documents' | 'plateCountry'>) => (value: string) => setForm((f) => ({ ...f, [field]: value }))
+  const set = (field: Exclude<keyof RegisterInput, 'documents' | 'plateCountry' | 'market'>) => (value: string) => setForm((f) => ({ ...f, [field]: value }))
   const setDocument = (kind: DocumentKind, name: string) => setForm((f) => ({ ...f, documents: { ...f.documents, [kind]: name } }))
-  const required = DOCUMENTS.filter((d) => !OPTIONAL_DOCUMENTS.includes(d))
-  const uploaded = required.length - missingDocuments(form.documents).length
+  const setMarket = (value: boolean) => setForm((f) => ({ ...f, market: value }))
+  const required = VEHICLE_DOCUMENTS.filter((d) => !OPTIONAL_DOCUMENTS.includes(d))
+  const uploaded = required.length - missingDocuments(form.documents, VEHICLE_DOCUMENTS).length
 
   function onSubmit(e: FormEvent) {
     e.preventDefault()
-    const res = register(state, form)
+    const res = register(state, { ...form, seller })
     setResult(res)
     if (res.ok) {
       update((s) => appendLog({ ...s, listings: [...s.listings, res.listing] }, { type: 'register', site: res.listing.site, result: res.listing.checkId }))
@@ -78,23 +92,27 @@ export function RegisterPage({ state, update }: Props) {
   }
 
   if (result?.ok) {
+    const onMarket = result.listing.site === MARKET_SITE
     return (
       <section className="page">
         <article className="report report-verified">
           <h2 className="stamp">{t('status.verified')}</h2>
-          <p className="report-body">{t('register.success.body')}</p>
+          <p className="report-body">{onMarket ? t('register.success.market') : t('register.success.body')}</p>
           <Leaders
             rows={[
               { label: t('result.checkId'), value: <code>{result.listing.checkId}</code> },
               { label: t('result.vehicle'), value: `${result.listing.make} ${result.listing.model} ${result.listing.year}` },
-              { label: t('result.site'), value: result.listing.site },
+              { label: t('result.site'), value: onMarket ? t('register.where.market') : result.listing.site },
               { label: t('result.verifiedOn'), value: new Date(result.listing.createdAt).toLocaleString(locale) },
             ]}
           />
           {result.otherSites.length > 0 && (
             <p>{t('register.success.otherSites', { sites: result.otherSites.map((l) => l.site).join(', ') })}</p>
           )}
-          <button type="button" className="button button-primary" onClick={restart}>{t('register.success.another')}</button>
+          <div className="actions">
+            {onMarket && <a className="button button-primary" href={`#/market/${result.listing.checkId}`}>{t('register.success.view')}</a>}
+            <button type="button" className={onMarket ? 'button button-quiet' : 'button button-primary'} onClick={restart}>{t('register.success.another')}</button>
+          </div>
         </article>
       </section>
     )
@@ -121,10 +139,19 @@ export function RegisterPage({ state, update }: Props) {
       )}
 
       <form className="form" onSubmit={onSubmit} noValidate>
-        <label className="field">
-          {t('register.url')}
-          <input type="url" inputMode="url" value={form.url} aria-invalid={invalid('url')} onChange={(e) => set('url')(e.target.value)} placeholder="https://www.kleinanzeigen.de/..." />
-        </label>
+        <div className="lang-switch" role="group" aria-label={t('register.where.label')}>
+          <button type="button" aria-pressed={market} onClick={() => setMarket(true)}>{t('register.where.market')}</button>
+          <button type="button" aria-pressed={!market} onClick={() => setMarket(false)}>{t('register.where.external')}</button>
+        </div>
+
+        {market ? (
+          <p className="muted small">{t('register.where.marketNote')}</p>
+        ) : (
+          <label className="field">
+            {t('register.url')}
+            <input type="url" inputMode="url" value={form.url} aria-invalid={invalid('url')} onChange={(e) => set('url')(e.target.value)} placeholder="https://www.kleinanzeigen.de/..." />
+          </label>
+        )}
         <div className="grid-3">
           <label className="field">
             {t('register.make')}
@@ -177,7 +204,7 @@ export function RegisterPage({ state, update }: Props) {
             {t('register.docs.progress', { n: uploaded, total: required.length })}
           </p>
           <ul className="docs-list">
-            {DOCUMENTS.map((kind) => {
+            {VEHICLE_DOCUMENTS.map((kind) => {
               const file = form.documents[kind]
               const optional = OPTIONAL_DOCUMENTS.includes(kind)
               return (
@@ -193,8 +220,7 @@ export function RegisterPage({ state, update }: Props) {
                     <input
                       type="file"
                       className="visually-hidden"
-                      accept={kind === 'selfie' ? 'image/*' : 'application/pdf,image/*'}
-                      capture={kind === 'selfie' ? 'user' : undefined}
+                      accept="application/pdf,image/*"
                       onChange={(e) => setDocument(kind, e.target.files?.[0]?.name ?? '')}
                     />
                   </label>
@@ -206,8 +232,8 @@ export function RegisterPage({ state, update }: Props) {
         </fieldset>
         <p className="muted small">{t('register.simulated')}</p>
         <div className="actions">
-          <button className="button button-primary" type="submit">{t('register.submit')}</button>
-          <button type="button" className="button button-quiet" onClick={() => setForm(DEMO)}>{t('register.demoFill')}</button>
+          <button className="button button-primary" type="submit">{market ? t('register.submit.market') : t('register.submit')}</button>
+          <button type="button" className="button button-quiet" onClick={() => setForm((f) => ({ ...DEMO, market: f.market }))}>{t('register.demoFill')}</button>
         </div>
       </form>
     </section>

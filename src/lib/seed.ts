@@ -35,13 +35,17 @@ const ads: Record<string, ListingAd> = {
   cb650: { price: 7450, km: 9800, city: 'Düsseldorf', seller: 'Sarah P.', memberSince: 2021, owners: 1, bodyColor: '#1b1c1f', exterior: 'color.black', interior: 'color.black', transmission: 'mp.trans.manual', fuel: 'mp.fuel.petrol', features: ['mp.feat.abs', 'mp.feat.led'], descriptionText: 'Honda CB650R Neo Sports Café, one owner and low mileage. Four-cylinder sound, slipper clutch and LED lights. Always serviced at Honda, winter stored indoors.' },
 }
 
-/** Os mesmos arquivos fictícios para todos os anúncios de exemplo. */
+/** Documentos do veículo (fictícios) usados em todos os anúncios de exemplo. */
 export const DEMO_DOCUMENTS: DocumentFiles = {
+  registration: 'registration-part-1.pdf',
+  title: 'registration-part-2.pdf',
+}
+
+/** Documentos pessoais do vendedor (fictícios) para o cadastro de conta de exemplo. */
+export const DEMO_SELLER_DOCUMENTS: DocumentFiles = {
   idFront: 'id-front.jpg',
   idBack: 'id-back.jpg',
   selfie: 'selfie-with-id.jpg',
-  registration: 'registration-part-1.pdf',
-  title: 'registration-part-2.pdf',
 }
 
 function listing(checkId: string, url: string, key: string, site: string, vehicle: typeof civic, createdAt: string, status: Listing['status'] = 'active', ad?: ListingAd): Listing {

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { MARKET_SITE, marketUrl } from './market'
 import { DEMO_DOCUMENTS, DEMO_URLS, seedState } from './seed'
 import { renavamCheckDigit } from './validation'
 import { addReport, check, markSold, register, type AppState, type RegisterInput } from './verify'
@@ -46,12 +47,34 @@ describe('cadastro do vendedor', () => {
     if (!res.ok) expect(res.errors).toEqual(['invalidPlate', 'invalidVin', 'invalidRenavam', 'missingDocuments'])
   })
 
-  it('exige identidade frente e verso, selfie e os documentos do veículo', () => {
-    const res = register(empty, { ...civic, documents: { idFront: 'front.jpg', registration: 'reg.pdf' } })
+  it('exige os documentos do veículo (a identidade do vendedor fica na conta)', () => {
+    const res = register(empty, { ...civic, documents: { registration: 'reg.pdf' } })
     expect(res.ok).toBe(false)
-    if (!res.ok) expect(res.missing).toEqual(['idBack', 'selfie', 'title'])
+    if (!res.ok) expect(res.missing).toEqual(['title'])
     const ok = register(empty, civic, new Date(), fixedId)
     expect(ok.ok && ok.listing.documents).toEqual(DEMO_DOCUMENTS)
+  })
+
+  it('publica no marketplace do Verify It sem link externo', () => {
+    const res = register(empty, { ...civic, market: true, url: '' }, new Date('2026-10-15T00:00:00Z'), fixedId)
+    expect(res.ok).toBe(true)
+    if (res.ok) {
+      expect(res.listing.site).toBe(MARKET_SITE)
+      expect(res.listing.url).toBe(marketUrl('VI-TEST01'))
+      expect(res.listing.checkId).toBe('VI-TEST01')
+    }
+  })
+
+  it('bloqueia o mesmo veículo publicado duas vezes no marketplace', () => {
+    const state = registered(empty, { ...civic, market: true, url: '' })
+    const res = register(state, { ...civic, market: true, url: '' })
+    expect(res.ok).toBe(false)
+    if (!res.ok) expect(res.errors).toEqual(['duplicateOnSite'])
+  })
+
+  it('guarda o nome do vendedor no anúncio', () => {
+    const res = register(empty, { ...civic, market: true, url: '', seller: 'Marcos A.' }, new Date(), fixedId)
+    expect(res.ok && res.listing.ad?.seller).toBe('Marcos A.')
   })
 
   it('permite o mesmo veículo em sites diferentes', () => {

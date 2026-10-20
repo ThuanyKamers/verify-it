@@ -3,6 +3,7 @@
 // protótipo); a real depende de um back-end e é ligada depois.
 // Ver docs/cadastro-login-banco.md.
 
+import type { DocumentFiles } from '../documents'
 import type { Role } from '../session'
 
 /** Conta de usuário. NUNCA carrega senha nem dado sensível. */
@@ -14,6 +15,11 @@ export interface Account {
   role: Role
   /** Se o segundo fator (2FA) está ativado para a conta. */
   twoFactor: boolean
+  /**
+   * Documentos pessoais do vendedor enviados no cadastro (no protótipo, só os
+   * nomes dos arquivos). Só o vendedor tem; o comprador não precisa.
+   */
+  documents?: DocumentFiles
 }
 
 export interface SignUpInput {
@@ -23,6 +29,8 @@ export interface SignUpInput {
   role: Role
   /** Ativar o segundo fator já no cadastro. */
   enableTwoFactor?: boolean
+  /** Documentos pessoais do vendedor (identidade frente/verso e selfie). */
+  documents?: DocumentFiles
 }
 
 export interface SignInInput {
@@ -48,6 +56,7 @@ export type AuthErrorCode =
   | 'invalidEmail'
   | 'weakPassword'
   | 'emailInUse'
+  | 'missingDocuments'
   | 'invalidCredentials'
   | 'invalidCode'
   | 'unavailable'

@@ -6,8 +6,14 @@
 //   Comprador: cola o link que está vendo -> verificado / possível golpe / não verificado
 
 import type { MessageKey } from '../i18n'
+import { missingDocuments, pickDocuments, VEHICLE_DOCUMENTS, type DocumentFiles, type DocumentKind } from './documents'
+import { marketUrl } from './market'
 import { parseListingUrl } from './url'
 import { clean, isValidRenavam, isValidVin, normalizePlate, normalizeRenavam, type PlateCountry } from './validation'
+
+// Reexporta a taxonomia de documentos para quem já importa daqui.
+export { DOCUMENTS, missingDocuments, OPTIONAL_DOCUMENTS, SELLER_DOCUMENTS, VEHICLE_DOCUMENTS, pickDocuments } from './documents'
+export type { DocumentFiles, DocumentKind } from './documents'
 
 /** Dados do anúncio no marketplace do Verify It: o que o vendedor informa, mais detalhes de exemplo dos dados de demonstração. */
 export interface ListingAd {
@@ -70,18 +76,13 @@ export interface AppState {
   log: LogEntry[]
 }
 
-/** Documentos que o vendedor envia para provar identidade e propriedade. */
-export const DOCUMENTS = ['idFront', 'idBack', 'selfie', 'registration', 'title', 'inspection'] as const
-export type DocumentKind = (typeof DOCUMENTS)[number]
-/** O laudo de inspeção (TÜV/HU) é opcional; os demais são obrigatórios. */
-export const OPTIONAL_DOCUMENTS: readonly DocumentKind[] = ['inspection']
-export type DocumentFiles = Partial<Record<DocumentKind, string>>
-
-export function missingDocuments(files: DocumentFiles): DocumentKind[] {
-  return DOCUMENTS.filter((d) => !OPTIONAL_DOCUMENTS.includes(d) && !files[d]?.trim())
-}
-
 export interface RegisterInput {
+  /**
+   * Onde o anúncio fica: `true` publica no marketplace do próprio Verify It
+   * (sem link externo); `false`/ausente verifica um anúncio em outro site.
+   */
+  market?: boolean
+  /** Link do anúncio em outro site; usado só quando `market` não é `true`. */
   url: string
   plate: string
   /** País da placa; sem país, aceita o formato de qualquer país. */
@@ -91,8 +92,10 @@ export interface RegisterInput {
   make: string
   model: string
   year: string
-  /** Nome do arquivo enviado para cada documento. */
+  /** Documentos do veículo. A identidade do vendedor fica na conta. */
   documents: DocumentFiles
+  /** Nome do vendedor (vem da conta logada); aparece no marketplace. */
+  seller?: string
   /** Opcionais: dados para o marketplace do Verify It. */
   price?: string
   km?: string
@@ -160,8 +163,20 @@ export function register(
   makeId: () => string = newCheckId,
 ): RegisterResult {
   const errors: RegisterError[] = []
-  const parsed = parseListingUrl(input.url)
-  if (!parsed) errors.push('invalidUrl')
+  const market = input.market === true
+
+  // No modo marketplace o link é o do próprio Verify It, gerado a partir do
+  // código único; nos demais, vem do vendedor e precisa ser válido.
+  let parsed
+  let marketId: string | null = null
+  if (market) {
+    marketId = makeId()
+    parsed = parseListingUrl(marketUrl(marketId))
+  } else {
+    parsed = parseListingUrl(input.url)
+    if (!parsed) errors.push('invalidUrl')
+  }
+
   const plate = normalizePlate(input.plate, input.plateCountry)
   if (!plate) errors.push('invalidPlate')
   if (!isValidVin(input.vin)) errors.push('invalidVin')
@@ -169,15 +184,19 @@ export function register(
   if (!input.make.trim() || !input.model.trim()) errors.push('missingVehicle')
   const year = Number(input.year)
   if (!Number.isInteger(year) || year < 1950 || year > now.getFullYear() + 1) errors.push('invalidYear')
-  const missing = missingDocuments(input.documents)
+  // Só os documentos do veículo: a identidade do vendedor já foi no cadastro da conta.
+  const missing = missingDocuments(input.documents, VEHICLE_DOCUMENTS)
   if (missing.length) errors.push('missingDocuments')
   if (errors.length || !parsed) return { ok: false, errors, ...(missing.length ? { missing } : {}) }
 
   const vehicle = { plate: plate ?? '', vin: clean(input.vin), renavam: normalizeRenavam(input.renavam) }
   const active = state.listings.filter((l) => l.status === 'active')
 
-  const sameUrl = active.find((l) => l.key === parsed.key)
-  if (sameUrl) return { ok: false, errors: ['urlAlreadyRegistered'], conflict: sameUrl }
+  // Link externo colado duas vezes: no marketplace o link é sempre novo.
+  if (!market) {
+    const sameUrl = active.find((l) => l.key === parsed.key)
+    if (sameUrl) return { ok: false, errors: ['urlAlreadyRegistered'], conflict: sameUrl }
+  }
 
   // Mesmo veículo em outro link do MESMO site: é o padrão do golpe de anúncio clonado.
   // Em sites diferentes (OLX, Facebook, Webmotors...) é normal o dono anunciar em vários.
@@ -190,16 +209,17 @@ export function register(
   )
   if (mismatch) return { ok: false, errors: ['dataMismatch'], conflict: mismatch }
 
+  const checkId = marketId ?? makeId()
   const listing: Listing = {
-    checkId: makeId(),
-    url: input.url.trim(),
+    checkId,
+    url: market ? marketUrl(checkId) : input.url.trim(),
     key: parsed.key,
     site: parsed.site,
     ...vehicle,
     make: input.make.trim(),
     model: input.model.trim(),
     year,
-    documents: Object.fromEntries(Object.entries(input.documents).filter(([, name]) => name?.trim())) as DocumentFiles,
+    documents: pickDocuments(input.documents, VEHICLE_DOCUMENTS),
     createdAt: now.toISOString(),
     status: 'active',
     ad: buildAd(input),
@@ -215,6 +235,8 @@ function buildAd(input: RegisterInput): ListingAd | undefined {
   }
   const text = (value?: string) => value?.trim() || undefined
   const ad: ListingAd = { price: num(input.price), km: num(input.km), city: text(input.city), descriptionText: text(input.description) }
+  const seller = text(input.seller)
+  if (seller) ad.seller = seller
   return Object.values(ad).some((v) => v !== undefined) ? ad : undefined
 }
 
