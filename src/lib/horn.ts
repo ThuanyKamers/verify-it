@@ -4,6 +4,28 @@
 let ctx: AudioContext | null = null
 let voice: { stop: () => void } | null = null
 
+/** Cria (uma vez) o contexto de áudio. */
+function getContext(): AudioContext | null {
+  if (ctx) return ctx
+  const Ctor = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext
+  if (!Ctor) return null
+  try {
+    ctx = new Ctor()
+  } catch {
+    ctx = null
+  }
+  return ctx
+}
+
+// Navegadores só liberam áudio após um gesto do usuário. Destravamos o contexto no
+// primeiro clique (antes do mousedown que dispara a buzina) e a cada novo clique,
+// caso o navegador o suspenda por inatividade. Sem isso a buzina só sai depois de
+// vários cliques.
+function unlockAudio(): void {
+  const audio = getContext()
+  if (audio && audio.state === 'suspended') void audio.resume()
+}
+
 /** Curva de distorção suave (tanh) para dar o timbre metálico da buzina. */
 function brassCurve(amount: number): Float32Array<ArrayBuffer> {
   const n = 256
@@ -19,39 +41,38 @@ function brassCurve(amount: number): Float32Array<ArrayBuffer> {
 function startHonk(): void {
   if (voice) return
   try {
-    const Ctor = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext
-    if (!Ctor) return
-    ctx = ctx ?? new Ctor()
-    if (ctx.state === 'suspended') void ctx.resume()
+    const audio = getContext()
+    if (!audio) return
+    if (audio.state === 'suspended') void audio.resume()
 
-    const now = ctx.currentTime
+    const now = audio.currentTime
 
     // Envelope/ataque: sobe rápido e segura (buzina mantida enquanto o botão fica pressionado).
-    const drive = ctx.createGain()
+    const drive = audio.createGain()
     drive.gain.setValueAtTime(0.0001, now)
     drive.gain.exponentialRampToValueAtTime(0.22, now + 0.012)
 
-    const shaper = ctx.createWaveShaper()
+    const shaper = audio.createWaveShaper()
     shaper.curve = brassCurve(2.2)
 
-    const lowpass = ctx.createBiquadFilter()
+    const lowpass = audio.createBiquadFilter()
     lowpass.type = 'lowpass'
     lowpass.frequency.value = 3800
     lowpass.Q.value = 0.6
 
-    const out = ctx.createGain()
+    const out = audio.createGain()
     out.gain.value = 0.45
 
     drive.connect(shaper)
     shaper.connect(lowpass)
     lowpass.connect(out)
-    out.connect(ctx.destination)
+    out.connect(audio.destination)
 
     // Dois tons a uma terça (≈ buzina de carro), cada um dobrado e levemente desafinado para encorpar.
     const oscs: OscillatorNode[] = []
     for (const base of [440, 554.37]) {
       for (const detune of [-5, 5]) {
-        const osc = ctx.createOscillator()
+        const osc = audio.createOscillator()
         osc.type = 'sawtooth'
         osc.frequency.value = base
         osc.detune.value = detune
@@ -96,10 +117,13 @@ export function startHorn(): () => void {
     if (selection && selection.type === 'Range' && !selection.isCollapsed) return
     startHonk()
   }
+  // Destrava o áudio em qualquer clique (fase de captura, antes do mousedown acima).
+  document.addEventListener('pointerdown', unlockAudio, true)
   document.addEventListener('mousedown', onDown)
   window.addEventListener('mouseup', stopHonk)
   window.addEventListener('blur', stopHonk)
   return () => {
+    document.removeEventListener('pointerdown', unlockAudio, true)
     document.removeEventListener('mousedown', onDown)
     window.removeEventListener('mouseup', stopHonk)
     window.removeEventListener('blur', stopHonk)
