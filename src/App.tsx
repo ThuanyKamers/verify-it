@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { LANGUAGES, useI18n, type MessageKey } from './i18n'
 import { loadRole, saveRole, type Role } from './lib/session'
+import { getAuthProvider, type Account } from './lib/auth'
 import { useAppState } from './lib/store'
 import { scrollToTop, startSmoothScroll } from './lib/smoothScroll'
 import { startHorn } from './lib/horn'
@@ -8,7 +9,7 @@ import { ActivityPage } from './pages/ActivityPage'
 import { CheckPage } from './pages/CheckPage'
 import { HowPage } from './pages/HowPage'
 import { MarketPage } from './pages/MarketPage'
-import { LoginPage } from './pages/LoginPage'
+import { AuthPage } from './pages/AuthPage'
 import { ListingCopyPage } from './pages/ListingCopyPage'
 import { RegisterPage } from './pages/RegisterPage'
 import { VehiclePage } from './pages/VehiclePage'
@@ -70,15 +71,16 @@ export function App() {
     return () => window.removeEventListener('hashchange', onHash)
   }, [role])
 
-  function login(next: Role) {
-    saveRole(next)
-    setRole(next)
-    const first = ROUTES_BY_ROLE[next][0]
+  function loginAccount(account: Account) {
+    saveRole(account.role)
+    setRole(account.role)
+    const first = ROUTES_BY_ROLE[account.role][0]
     window.location.hash = `#/${first}`
     setRoute(first)
   }
 
   function logout() {
+    void getAuthProvider().signOut()
     saveRole(null)
     setRole(null)
     window.location.hash = ''
@@ -131,7 +133,7 @@ export function App() {
       </header>
 
       <main className="main">
-        {!role && <LoginPage onLogin={login} />}
+        {!role && <AuthPage onAuthenticated={loginAccount} />}
         {role && route === 'check' && <CheckPage {...app} />}
         {role && route === 'market' && (vehicleId ? <VehiclePage key={vehicleId} state={app.state} checkId={vehicleId} /> : <MarketPage state={app.state} />)}
         {role && route === 'register' && <RegisterPage {...app} />}
