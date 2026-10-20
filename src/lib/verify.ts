@@ -34,6 +34,15 @@ export interface ListingAd {
   memberSince?: number
 }
 
+/**
+ * Conferência dos documentos do VEÍCULO (feita pela empresa, depois de o
+ * vendedor já ter sido aprovado):
+ *  - 'pending': anúncio em rascunho, aguardando conferência;
+ *  - 'approved': documentos do veículo conferidos;
+ *  - 'rejected': recusados, o vendedor precisa reenviar.
+ */
+export type VehicleReview = 'pending' | 'approved' | 'rejected'
+
 export interface Listing {
   checkId: string
   url: string
@@ -48,7 +57,16 @@ export interface Listing {
   /** Arquivos enviados no cadastro (no protótipo, só os nomes). */
   documents: DocumentFiles
   createdAt: string
-  status: 'active' | 'sold'
+  /**
+   * Situação do anúncio:
+   *  - 'draft': criado pelo vendedor, ainda NÃO publicado (só aparece pra ele);
+   *  - 'active': publicado e verificável pelos compradores;
+   *  - 'sold': o dono marcou como vendido.
+   * Só vira 'active' depois de vendedor E veículo aprovados (ver publishListing).
+   */
+  status: 'draft' | 'active' | 'sold'
+  /** Conferência dos documentos do veículo (ausente nos dados de exemplo já ativos). */
+  vehicleReview?: VehicleReview
   ad?: ListingAd
 }
 
@@ -190,21 +208,22 @@ export function register(
   if (errors.length || !parsed) return { ok: false, errors, ...(missing.length ? { missing } : {}) }
 
   const vehicle = { plate: plate ?? '', vin: clean(input.vin), renavam: normalizeRenavam(input.renavam) }
-  const active = state.listings.filter((l) => l.status === 'active')
+  // Anúncios que ainda "ocupam" o veículo: rascunhos e publicados (vendidos liberam).
+  const existing = state.listings.filter((l) => l.status !== 'sold')
 
   // Link externo colado duas vezes: no marketplace o link é sempre novo.
   if (!market) {
-    const sameUrl = active.find((l) => l.key === parsed.key)
+    const sameUrl = existing.find((l) => l.key === parsed.key)
     if (sameUrl) return { ok: false, errors: ['urlAlreadyRegistered'], conflict: sameUrl }
   }
 
   // Mesmo veículo em outro link do MESMO site: é o padrão do golpe de anúncio clonado.
   // Em sites diferentes (OLX, Facebook, Webmotors...) é normal o dono anunciar em vários.
-  const duplicate = active.find((l) => l.site === parsed.site && sameVehicle(l, vehicle))
+  const duplicate = existing.find((l) => l.site === parsed.site && sameVehicle(l, vehicle))
   if (duplicate) return { ok: false, errors: ['duplicateOnSite'], conflict: duplicate }
 
   // Placa, chassi e RENAVAM precisam bater com o que já foi verificado para esse veículo.
-  const mismatch = active.find(
+  const mismatch = existing.find(
     (l) => sameVehicle(l, vehicle) && (l.plate !== vehicle.plate || l.vin !== vehicle.vin || l.renavam !== vehicle.renavam),
   )
   if (mismatch) return { ok: false, errors: ['dataMismatch'], conflict: mismatch }
@@ -221,11 +240,72 @@ export function register(
     year,
     documents: pickDocuments(input.documents, VEHICLE_DOCUMENTS),
     createdAt: now.toISOString(),
-    status: 'active',
+    // Todo anúncio nasce em rascunho: só é publicado depois de a empresa aprovar
+    // o vendedor e, DEPOIS, os documentos do veículo (ver publishListing).
+    status: 'draft',
+    vehicleReview: 'pending',
     ad: buildAd(input),
   }
-  const otherSites = active.filter((l) => sameVehicle(l, vehicle))
+  const otherSites = existing.filter((l) => sameVehicle(l, vehicle))
   return { ok: true, listing, otherSites }
+}
+
+export type VehicleReviewError = 'notFound' | 'notDraft' | 'sellerNotApproved'
+
+export type VehicleReviewResult =
+  | { ok: true; state: AppState; listing: Listing }
+  | { ok: false; error: VehicleReviewError }
+
+/**
+ * Conferência dos documentos do VEÍCULO pela empresa. A REGRA central do
+ * produto está aqui: o veículo só pode ser APROVADO se o vendedor JÁ foi
+ * aprovado (`sellerApproved`). Assim é impossível, por construção, o veículo
+ * ser aprovado antes do vendedor. Recusar é sempre permitido.
+ */
+export function reviewVehicle(
+  state: AppState,
+  checkId: string,
+  decision: Exclude<VehicleReview, 'pending'>,
+  sellerApproved: boolean,
+): VehicleReviewResult {
+  const listing = state.listings.find((l) => l.checkId === checkId)
+  if (!listing) return { ok: false, error: 'notFound' }
+  if (listing.status !== 'draft') return { ok: false, error: 'notDraft' }
+  // A trava: aprovar o veículo exige vendedor já aprovado.
+  if (decision === 'approved' && !sellerApproved) return { ok: false, error: 'sellerNotApproved' }
+  const updated: Listing = { ...listing, vehicleReview: decision }
+  return {
+    ok: true,
+    state: { ...state, listings: state.listings.map((l) => (l.checkId === checkId ? updated : l)) },
+    listing: updated,
+  }
+}
+
+export type PublishError = 'notFound' | 'notDraft' | 'sellerNotApproved' | 'vehicleNotApproved'
+
+export type PublishResult =
+  | { ok: true; state: AppState; listing: Listing }
+  | { ok: false; error: PublishError }
+
+/**
+ * Publica um anúncio em rascunho (deixa-o verificável pelos compradores).
+ * Dupla trava, na ordem exigida: NUNCA publica sem o vendedor aprovado, e só
+ * depois disso, com os documentos do veículo também aprovados. Qualquer outra
+ * combinação é recusada — o anúncio não sobe.
+ */
+export function publishListing(state: AppState, checkId: string, sellerApproved: boolean): PublishResult {
+  const listing = state.listings.find((l) => l.checkId === checkId)
+  if (!listing) return { ok: false, error: 'notFound' }
+  if (listing.status !== 'draft') return { ok: false, error: 'notDraft' }
+  // 1º o vendedor; 2º o veículo. Fora dessa ordem, não publica.
+  if (!sellerApproved) return { ok: false, error: 'sellerNotApproved' }
+  if (listing.vehicleReview !== 'approved') return { ok: false, error: 'vehicleNotApproved' }
+  const updated: Listing = { ...listing, status: 'active' }
+  return {
+    ok: true,
+    state: { ...state, listings: state.listings.map((l) => (l.checkId === checkId ? updated : l)) },
+    listing: updated,
+  }
 }
 
 function buildAd(input: RegisterInput): ListingAd | undefined {
