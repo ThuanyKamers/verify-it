@@ -1,0 +1,56 @@
+erDiagram
+  accounts ||--o{ listings : "publica"
+  accounts ||--o{ account_documents : "identidade"
+  accounts ||--o{ interaction_log : "ações"
+  listings ||--o{ listing_documents : "docs do veículo"
+  accounts {
+    uuid id PK
+    text name
+    text email UK
+    role role
+    bool two_factor
+    verification_status verification "vendedor"
+    notify_channel notify_by
+    text phone
+  }
+  account_documents {
+    uuid account_id FK
+    document_kind kind PK
+    text file_path
+  }
+  listings {
+    text check_id PK
+    uuid seller_id FK
+    text url
+    text key
+    text site
+    text plate
+    text vin
+    text renavam
+    text make
+    text model
+    int year
+    listing_status status "draft|active|sold"
+    vehicle_review vehicle_review
+    int price_cents
+    int km
+    text city
+  }
+  listing_documents {
+    text listing_id FK
+    document_kind kind PK
+    text file_path
+  }
+  reports {
+    uuid id PK
+    text key
+    text site
+    text url
+  }
+  interaction_log {
+    uuid id PK
+    uuid account_id FK
+    log_type type
+    text site
+    text result
+  }
