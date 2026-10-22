@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { MARKET_SITE, marketUrl } from './market'
 import { DEMO_DOCUMENTS, DEMO_URLS, seedState } from './seed'
 import { renavamCheckDigit } from './validation'
-import { addReport, check, markSold, publishListing, register, reviewVehicle, type AppState, type RegisterInput } from './verify'
+import { addReport, check, markSold, publishListing, register, registerListings, reviewVehicle, type AppState, type RegisterInput, type RegisterListingsInput } from './verify'
 
 const civic: RegisterInput = {
   url: 'https://www.webmotors.com.br/comprar/honda/civic/123',
@@ -108,6 +108,55 @@ describe('cadastro do vendedor', () => {
     const res = register(state, { ...civic, url: 'https://olx.com.br/x', vin: 'SB1ZS3HE0M0123456' })
     expect(res.ok).toBe(false)
     if (!res.ok) expect(res.errors).toEqual(['dataMismatch'])
+  })
+})
+
+describe('publicar em vários lugares de uma vez', () => {
+  const { url: _url, ...vehicle } = civic
+  const seqIds = () => {
+    let n = 0
+    return () => `VI-TST${String(++n).padStart(3, '0')}`
+  }
+  const input = (extra: Partial<RegisterListingsInput>): RegisterListingsInput => ({ ...vehicle, ...extra })
+
+  it('publica no marketplace e em outro site no mesmo envio', () => {
+    const res = registerListings(empty, input({ market: true, urls: ['https://www.olx.com.br/autos/civic-1'] }), new Date('2026-10-15T00:00:00Z'), seqIds())
+    expect(res.ok).toBe(true)
+    if (res.ok) {
+      expect(res.listings).toHaveLength(2)
+      expect(res.listings.map((l) => l.site)).toEqual([MARKET_SITE, 'olx.com.br'])
+      expect(new Set(res.listings.map((l) => l.checkId)).size).toBe(2)
+    }
+  })
+
+  it('aceita vários links de sites diferentes', () => {
+    const res = registerListings(empty, input({ market: false, urls: ['https://www.olx.com.br/autos/civic-1', 'https://www.facebook.com/marketplace/item/999'] }), new Date(), seqIds())
+    expect(res.ok && res.listings.map((l) => l.site)).toEqual(['olx.com.br', 'facebook.com'])
+  })
+
+  it('exige ao menos um destino', () => {
+    const res = registerListings(empty, input({ market: false, urls: ['', '   '] }))
+    expect(res.ok).toBe(false)
+    if (!res.ok) expect(res.errors).toContain('noDestination')
+  })
+
+  it('recusa o mesmo link colado duas vezes', () => {
+    const url = 'https://www.olx.com.br/autos/civic-1'
+    const res = registerListings(empty, input({ market: false, urls: [url, url] }), new Date(), seqIds())
+    expect(res.ok).toBe(false)
+    if (!res.ok) expect(res.errors).toContain('urlAlreadyRegistered')
+  })
+
+  it('é tudo ou nada: um link inválido derruba o envio', () => {
+    const res = registerListings(empty, input({ market: true, urls: ['não é link'] }), new Date(), seqIds())
+    expect(res.ok).toBe(false)
+    if (!res.ok) expect(res.errors).toContain('invalidUrl')
+  })
+
+  it('aponta os outros sites onde o veículo já estava', () => {
+    const state = registered(empty, { ...civic, url: 'https://www.webmotors.com.br/comprar/honda/civic/123' })
+    const res = registerListings(state, input({ market: true, urls: [] }), new Date(), seqIds())
+    expect(res.ok && res.otherSites.map((l) => l.site)).toEqual(['webmotors.com.br'])
   })
 })
 
