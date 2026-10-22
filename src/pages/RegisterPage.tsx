@@ -7,15 +7,15 @@ import { MARKET_SITE } from '../lib/market'
 import type { useAppState } from '../lib/store'
 import { PLATES, renavamCheckDigit } from '../lib/validation'
 import { DEMO_DOCUMENTS } from '../lib/seed'
-import { appendLog, missingDocuments, OPTIONAL_DOCUMENTS, register, VEHICLE_DOCUMENTS, type DocumentKind, type Listing, type RegisterError, type RegisterInput, type RegisterResult } from '../lib/verify'
+import { appendLog, missingDocuments, OPTIONAL_DOCUMENTS, registerListings, VEHICLE_DOCUMENTS, type DocumentKind, type Listing, type RegisterError, type RegisterListingsInput, type RegisterListingsResult } from '../lib/verify'
 
 type Props = ReturnType<typeof useAppState>
 
+/** Estado do formulário: o veículo mais onde publicar (marketplace e/ou links). */
+type FormState = Omit<RegisterListingsInput, 'market' | 'urls' | 'seller'> & { market: boolean; urls: string[] }
+
 /** Campos destacados em vermelho para cada erro do cadastro. */
 const FIELDS_BY_ERROR: Partial<Record<RegisterError, string[]>> = {
-  invalidUrl: ['url'],
-  urlAlreadyRegistered: ['url'],
-  duplicateOnSite: ['url'],
   invalidPlate: ['plate'],
   invalidVin: ['vin'],
   invalidRenavam: ['renavam'],
@@ -24,11 +24,14 @@ const FIELDS_BY_ERROR: Partial<Record<RegisterError, string[]>> = {
   dataMismatch: ['plate', 'vin', 'renavam'],
 }
 
-const EMPTY: RegisterInput = { market: true, url: '', plate: '', vin: '', renavam: '', make: '', model: '', year: '', documents: {} }
+/** Erros que apontam para os links de outros sites. */
+const URL_ERRORS: RegisterError[] = ['invalidUrl', 'urlAlreadyRegistered', 'duplicateOnSite']
 
-/** Dados de exemplo: um Civic anunciado no próprio marketplace do Verify It. */
-const DEMO: Omit<RegisterInput, 'market'> = {
-  url: 'https://www.kleinanzeigen.de/s-anzeige/honda-civic-exl-2019/2845123456-216-3331',
+const EMPTY: FormState = { market: true, urls: [], plate: '', vin: '', renavam: '', make: '', model: '', year: '', documents: {} }
+
+/** Dados de exemplo: um Civic no marketplace do Verify It e também num site externo. */
+const DEMO: Omit<FormState, 'market'> = {
+  urls: ['https://www.kleinanzeigen.de/s-anzeige/honda-civic-exl-2019/2845123456-216-3331'],
   plate: 'B KM 4821',
   plateCountry: 'DE',
   vin: 'JHMFC2650KS100001',
@@ -45,9 +48,9 @@ const DEMO: Omit<RegisterInput, 'market'> = {
 
 export function RegisterPage({ state, update }: Props) {
   const { t, locale } = useI18n()
-  const [form, setForm] = useState<RegisterInput>(EMPTY)
+  const [form, setForm] = useState<FormState>(EMPTY)
   const [seller, setSeller] = useState('')
-  const [result, setResult] = useState<RegisterResult | null>(null)
+  const [result, setResult] = useState<RegisterListingsResult | null>(null)
   const alertRef = useRef<HTMLDivElement>(null)
 
   // Nome do vendedor logado: aparece no anúncio do marketplace.
@@ -64,23 +67,30 @@ export function RegisterPage({ state, update }: Props) {
     if (result && !result.ok) alertRef.current?.focus()
   }, [result])
 
-  const market = form.market === true
   const bad = new Set(result && !result.ok ? result.errors.flatMap((err) => FIELDS_BY_ERROR[err] ?? []) : [])
+  const urlInvalid = result && !result.ok && result.errors.some((err) => URL_ERRORS.includes(err))
   const missingDocs = result && !result.ok ? (result.missing ?? []) : []
   const invalid = (field: string) => (bad.has(field) ? true : undefined)
 
-  const set = (field: Exclude<keyof RegisterInput, 'documents' | 'plateCountry' | 'market'>) => (value: string) => setForm((f) => ({ ...f, [field]: value }))
+  const set = (field: Exclude<keyof FormState, 'documents' | 'plateCountry' | 'market' | 'urls'>) => (value: string) => setForm((f) => ({ ...f, [field]: value }))
   const setDocument = (kind: DocumentKind, name: string) => setForm((f) => ({ ...f, documents: { ...f.documents, [kind]: name } }))
   const setMarket = (value: boolean) => setForm((f) => ({ ...f, market: value }))
+  const addUrl = () => setForm((f) => ({ ...f, urls: [...f.urls, ''] }))
+  const setUrl = (index: number) => (value: string) => setForm((f) => ({ ...f, urls: f.urls.map((u, i) => (i === index ? value : u)) }))
+  const removeUrl = (index: number) => setForm((f) => ({ ...f, urls: f.urls.filter((_, i) => i !== index) }))
   const required = VEHICLE_DOCUMENTS.filter((d) => !OPTIONAL_DOCUMENTS.includes(d))
   const uploaded = required.length - missingDocuments(form.documents, VEHICLE_DOCUMENTS).length
 
   function onSubmit(e: FormEvent) {
     e.preventDefault()
-    const res = register(state, { ...form, seller })
+    const res = registerListings(state, { ...form, seller })
     setResult(res)
     if (res.ok) {
-      update((s) => appendLog({ ...s, listings: [...s.listings, res.listing] }, { type: 'register', site: res.listing.site, result: res.listing.checkId }))
+      update((s) => {
+        let next = { ...s, listings: [...s.listings, ...res.listings] }
+        for (const listing of res.listings) next = appendLog(next, { type: 'register', site: listing.site, result: listing.checkId })
+        return next
+      })
     } else {
       update((s) => appendLog(s, { type: 'rejected', site: res.conflict?.site ?? '-', result: res.errors.join(', ') }))
     }
@@ -92,7 +102,8 @@ export function RegisterPage({ state, update }: Props) {
   }
 
   if (result?.ok) {
-    const onMarket = result.listing.site === MARKET_SITE
+    const first = result.listings[0]
+    const where = (l: Listing) => (l.site === MARKET_SITE ? t('register.where.market') : l.site)
     // O anúncio nasce como rascunho: só é publicado depois de a conta e o veículo
     // serem aprovados (ver ActivityPage). Por isso não dizemos "verificado" aqui.
     return (
@@ -102,12 +113,17 @@ export function RegisterPage({ state, update }: Props) {
           <p className="report-body">{t('register.draft.body')}</p>
           <Leaders
             rows={[
-              { label: t('result.checkId'), value: <code>{result.listing.checkId}</code> },
-              { label: t('result.vehicle'), value: `${result.listing.make} ${result.listing.model} ${result.listing.year}` },
-              { label: t('result.site'), value: onMarket ? t('register.where.market') : result.listing.site },
-              { label: t('register.draft.created'), value: new Date(result.listing.createdAt).toLocaleString(locale) },
+              { label: t('result.vehicle'), value: `${first.make} ${first.model} ${first.year}` },
+              { label: t('register.draft.created'), value: new Date(first.createdAt).toLocaleString(locale) },
             ]}
           />
+          <ul className="draft-listings">
+            {result.listings.map((l) => (
+              <li key={l.checkId}>
+                <code>{l.checkId}</code> · {where(l)}
+              </li>
+            ))}
+          </ul>
           {result.otherSites.length > 0 && (
             <p>{t('register.success.otherSites', { sites: result.otherSites.map((l) => l.site).join(', ') })}</p>
           )}
@@ -141,19 +157,26 @@ export function RegisterPage({ state, update }: Props) {
       )}
 
       <form className="form" onSubmit={onSubmit} noValidate>
-        <div className="lang-switch" role="group" aria-label={t('register.where.label')}>
-          <button type="button" aria-pressed={market} onClick={() => setMarket(true)}>{t('register.where.market')}</button>
-          <button type="button" aria-pressed={!market} onClick={() => setMarket(false)}>{t('register.where.external')}</button>
-        </div>
-
-        {market ? (
-          <p className="muted small">{t('register.where.marketNote')}</p>
-        ) : (
-          <label className="field">
-            {t('register.url')}
-            <input type="url" inputMode="url" value={form.url} aria-invalid={invalid('url')} onChange={(e) => set('url')(e.target.value)} placeholder="https://www.kleinanzeigen.de/..." />
+        <fieldset className="where">
+          <legend>{t('register.where.label')}</legend>
+          <label className="check">
+            <input type="checkbox" checked={form.market} onChange={(e) => setMarket(e.target.checked)} />
+            {t('register.where.marketCheck')}
           </label>
-        )}
+
+          <p className="muted small">{t('register.where.otherSitesNote')}</p>
+          {form.urls.map((url, i) => (
+            <div className="link-row" key={i}>
+              <label className="field">
+                <span className="visually-hidden">{t('register.url')}</span>
+                <input type="url" inputMode="url" value={url} aria-invalid={urlInvalid || undefined} onChange={(e) => setUrl(i)(e.target.value)} placeholder="https://www.kleinanzeigen.de/..." />
+              </label>
+              <button type="button" className="text-button" onClick={() => removeUrl(i)}>{t('register.where.removeLink')}</button>
+            </div>
+          ))}
+          <button type="button" className="button button-quiet" onClick={addUrl}>{t('register.where.addLink')}</button>
+        </fieldset>
+
         <div className="grid-3">
           <label className="field">
             {t('register.make')}
@@ -234,8 +257,8 @@ export function RegisterPage({ state, update }: Props) {
         </fieldset>
         <p className="muted small">{t('register.simulated')}</p>
         <div className="actions">
-          <button className="button button-primary" type="submit">{market ? t('register.submit.market') : t('register.submit')}</button>
-          <button type="button" className="button button-quiet" onClick={() => setForm((f) => ({ ...DEMO, market: f.market }))}>{t('register.demoFill')}</button>
+          <button className="button button-primary" type="submit">{t('register.submit')}</button>
+          <button type="button" className="button button-quiet" onClick={() => setForm({ ...DEMO, market: true })}>{t('register.demoFill')}</button>
         </div>
       </form>
     </section>

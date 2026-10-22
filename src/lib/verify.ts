@@ -132,9 +132,22 @@ export type RegisterError =
   | 'urlAlreadyRegistered'
   | 'duplicateOnSite'
   | 'dataMismatch'
+  // Nenhum lugar escolhido para publicar (nem marketplace, nem link).
+  | 'noDestination'
 
 export type RegisterResult =
   | { ok: true; listing: Listing; otherSites: Listing[] }
+  | { ok: false; errors: RegisterError[]; conflict?: Listing; missing?: DocumentKind[] }
+
+export interface RegisterListingsInput extends Omit<RegisterInput, 'market' | 'url'> {
+  /** Publicar o anúncio no marketplace do próprio Verify It. */
+  market?: boolean
+  /** Links em outros sites onde o MESMO veículo também está anunciado. */
+  urls?: string[]
+}
+
+export type RegisterListingsResult =
+  | { ok: true; listings: Listing[]; otherSites: Listing[] }
   | { ok: false; errors: RegisterError[]; conflict?: Listing; missing?: DocumentKind[] }
 
 export type CheckStatus = 'verified' | 'scam' | 'unverified' | 'invalid'
@@ -248,6 +261,42 @@ export function register(
   }
   const otherSites = existing.filter((l) => sameVehicle(l, vehicle))
   return { ok: true, listing, otherSites }
+}
+
+/**
+ * Cadastra o MESMO veículo em um ou mais lugares de uma vez: o marketplace do
+ * Verify It e/ou vários links de outros sites. Cada destino vira um anúncio
+ * (um Listing) com o mesmo veículo e os mesmos documentos. Reaproveita
+ * register() destino a destino, encadeando o estado, então todas as travas
+ * (link repetido, mesmo veículo no mesmo site, dados divergentes) continuam
+ * valendo — inclusive entre os links colados neste mesmo envio. É tudo ou nada:
+ * se qualquer destino falhar, nada é criado.
+ */
+export function registerListings(
+  state: AppState,
+  input: RegisterListingsInput,
+  now: Date = new Date(),
+  makeId: () => string = newCheckId,
+): RegisterListingsResult {
+  const urls = (input.urls ?? []).map((u) => u.trim()).filter((u) => u.length > 0)
+  const destinations: Array<{ market: boolean; url: string }> = []
+  if (input.market === true) destinations.push({ market: true, url: '' })
+  for (const url of urls) destinations.push({ market: false, url })
+  if (destinations.length === 0) return { ok: false, errors: ['noDestination'] }
+
+  let working = state
+  const listings: Listing[] = []
+  let otherSites: Listing[] = []
+  for (let i = 0; i < destinations.length; i++) {
+    const res = register(working, { ...input, market: destinations[i].market, url: destinations[i].url }, now, makeId)
+    if (!res.ok) return { ok: false, errors: res.errors, ...(res.conflict ? { conflict: res.conflict } : {}), ...(res.missing ? { missing: res.missing } : {}) }
+    // Os "outros sites" (onde o veículo já estava antes deste envio) saem da
+    // primeira chamada, antes de os novos anúncios entrarem no estado.
+    if (i === 0) otherSites = res.otherSites
+    listings.push(res.listing)
+    working = { ...working, listings: [...working.listings, res.listing] }
+  }
+  return { ok: true, listings, otherSites }
 }
 
 export type VehicleReviewError = 'notFound' | 'notDraft' | 'sellerNotApproved'
