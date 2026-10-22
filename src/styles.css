@@ -122,6 +122,8 @@ h1 + .muted { margin-top: 0.75rem; }
 .role span { color: var(--ink-2); font-size: 1rem; }
 .role:hover { background: var(--ink); color: var(--sheet); }
 .role:hover span { color: #d5dae8; }
+.role[aria-pressed='true'] { background: var(--ink); color: var(--sheet); border-color: var(--ink); }
+.role[aria-pressed='true'] span { color: #d5dae8; }
 
 /* Formulários */
 

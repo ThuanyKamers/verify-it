@@ -35,6 +35,8 @@ const COPY: Record<Lang, Record<string, string>> = {
     'err.invalidCredentials': 'E-mail ou senha incorretos.',
     'err.invalidCode': 'Código inválido.',
     'err.generic': 'Não foi possível concluir. Tente de novo.',
+    noAccountHint: 'Ainda não tem conta?',
+    goSignup: 'Criar conta',
   },
   en: {
     signinTab: 'Sign in',
@@ -65,6 +67,8 @@ const COPY: Record<Lang, Record<string, string>> = {
     'err.invalidCredentials': 'Wrong email or password.',
     'err.invalidCode': 'Invalid code.',
     'err.generic': 'Could not complete. Please try again.',
+    noAccountHint: "Don't have an account yet?",
+    goSignup: 'Create account',
   },
   de: {
     signinTab: 'Anmelden',
@@ -95,6 +99,8 @@ const COPY: Record<Lang, Record<string, string>> = {
     'err.invalidCredentials': 'E-Mail oder Passwort falsch.',
     'err.invalidCode': 'Ungültiger Code.',
     'err.generic': 'Konnte nicht abgeschlossen werden. Bitte erneut versuchen.',
+    noAccountHint: 'Noch kein Konto?',
+    goSignup: 'Konto erstellen',
   },
 }
 
@@ -299,7 +305,17 @@ export function AuthPage({ onAuthenticated }: { onAuthenticated: (account: Accou
           </fieldset>
         )}
 
-        {errorText && <p className="muted small" role="alert">{errorText}</p>}
+        {errorText && (
+          <div className="alert" role="alert">
+            <p>{errorText}</p>
+            {mode === 'signin' && error === 'invalidCredentials' && (
+              <p className="small">
+                {c.noAccountHint}{' '}
+                <button type="button" className="text-button" onClick={() => { setMode('signup'); setError(null) }}>{c.goSignup}</button>
+              </p>
+            )}
+          </div>
+        )}
         <button type="submit" disabled={busy || (needDocs && docsMissing.length > 0)}>{mode === 'signup' ? c.submitSignup : c.submitSignin}</button>
         <p className="muted small">{c.demo}</p>
       </form>
