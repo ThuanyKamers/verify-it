@@ -42,8 +42,6 @@ body {
   font: 400 1.125rem/1.55 var(--text);
   hyphens: auto;
   overflow-wrap: break-word;
-  /* Cursor de carrinho em qualquer área livre da página. */
-  cursor: url("data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20width=%2730%27%20height=%2722%27%20viewBox=%270%200%2030%2022%27%3E%3Cpath%20d=%27M1%2015C1%2013%202%2012%204%2012L6%208C6.6%206.8%207.6%206%209%206L18%206C19.5%206%2020.5%206.8%2021.5%208L24%2012%2027%2013C28.5%2013.3%2029%2014%2029%2015.5L29%2016.5C29%2017.3%2028.3%2018%2027.5%2018L26%2018A3%203%200%200%201%2020%2018L12%2018A3%203%200%200%201%206%2018L3%2018C1.9%2018%201%2017%201%2016Z%27%20fill=%27%2317348c%27%20stroke=%27%23fbfbf8%27%20stroke-width=%271.4%27%20stroke-linejoin=%27round%27/%3E%3Ccircle%20cx=%279%27%20cy=%2718%27%20r=%272.4%27%20fill=%27%2314203b%27%20stroke=%27%23fbfbf8%27%20stroke-width=%271.2%27/%3E%3Ccircle%20cx=%2723%27%20cy=%2718%27%20r=%272.4%27%20fill=%27%2314203b%27%20stroke=%27%23fbfbf8%27%20stroke-width=%271.2%27/%3E%3Cpath%20d=%27M9%208.5%2011%2011.5%2018.5%2011.5%2017%208.5Z%27%20fill=%27%239db7ff%27/%3E%3C/svg%3E") 6 11, auto;
 }
 
 /* Botões, links e campos mantêm o cursor convencional. */
