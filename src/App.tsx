@@ -4,7 +4,6 @@ import { loadRole, saveRole, type Role } from './lib/session'
 import { getAuthProvider, type Account } from './lib/auth'
 import { useAppState } from './lib/store'
 import { scrollToTop, startSmoothScroll } from './lib/smoothScroll'
-import { startHorn } from './lib/horn'
 import { ActivityPage } from './pages/ActivityPage'
 import { CheckPage } from './pages/CheckPage'
 import { HowPage } from './pages/HowPage'
@@ -59,7 +58,6 @@ export function App() {
   const app = useAppState()
 
   useEffect(() => startSmoothScroll(), [])
-  useEffect(() => startHorn(), [])
 
   // Recupera a conta da sessão (ex.: ao recarregar a página já logado).
   useEffect(() => {
