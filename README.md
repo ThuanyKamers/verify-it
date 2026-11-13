@@ -83,3 +83,7 @@ Every push to `main` publishes the site to GitHub Pages through the [`deploy.yml
 ## Roadmap
 
 The planned work is in [ROADMAP.md](ROADMAP.md).
+
+## License
+
+The code is released under the [MIT License](LICENSE). The vehicle photos in `public/vehicles/` keep their own Wikimedia Commons licences, listed with their authors in [`src/lib/photos.ts`](src/lib/photos.ts).
