@@ -1,7 +1,7 @@
 // Ponto único de ativação ("gatilho") da autenticação.
 //
 // Sem VITE_AUTH_ENDPOINT configurado, usa o mock local (protótipo). Com ele
-// configurado, usa o back-end real. Ver docs/cadastro-login-banco.md.
+// configurado, usa o back-end real. Ver .env.example e db/README.md.
 
 import { mockAuth } from './mockAuth'
 import { remoteAuth } from './remoteAuth'
