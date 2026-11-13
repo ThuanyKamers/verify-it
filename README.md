@@ -4,6 +4,23 @@ Prototype of a platform that helps used-vehicle buyers find out whether an onlin
 
 **Live site:** https://thuanykamers.github.io/verify-it/
 
+## Who it's for
+
+- **Buyers** of used cars and motorcycles on classifieds sites (Kleinanzeigen, mobile.de, OLX, Facebook Marketplace...), who want to know whether the listing in front of them is the owner's real one or a clone.
+- **Private sellers and dealers**, who register their listing once and get a link buyers can trust.
+
+Today it is a working prototype with fictitious sample data, published as a static demo.
+
+## Built with
+
+- **React 19** and **TypeScript**, bundled with **Vite**
+- **Vitest** for the verification-logic tests
+- **GSAP** and **Lenis** for animation and smooth scrolling
+- **PostgreSQL** schema for the future back-end ([`db/`](db/))
+- **GitHub Actions** for CI (tests and build) and deployment to **GitHub Pages**
+
+## Background
+
 Verify It started at the Techstars Startup Weekend Cyber Security São José 2025, where the team built the first MVP (then called **verifiCAR**) and won 3rd place.
 
 ## The problem
@@ -42,17 +59,31 @@ English (default), Portuguese and German, with a switch at the top of the page. 
 - Ownership verification is **simulated**: we only check the plate and VIN format and the RENAVAM check digit. A real lookup requires integration with DETRAN/SENATRAN.
 - Data stays **in the browser** (localStorage), with fictitious sample listings. For a seller and a buyer on different devices, replace `localStore` in [`src/lib/store.ts`](src/lib/store.ts) with an online database (e.g. Supabase).
 
-## Development
+## Running it locally
+
+Requirements: **Node.js 22** and npm.
 
 ```bash
+git clone https://github.com/thuanykamers/verify-it.git
+cd verify-it
 npm install
-npm run dev      # local server
+npm run dev      # local server at http://localhost:5173/verify-it/
 npm test         # verification logic tests
 npm run build    # production build in dist/
 ```
 
+No configuration is needed: without environment variables the app uses a local mock for login and 2FA and keeps data in the browser. To point it at a back-end, copy [`.env.example`](.env.example) to `.env.local` and fill in `VITE_AUTH_ENDPOINT`. `.env` files are ignored by git; never commit real keys.
+
 The business rules live in [`src/lib/verify.ts`](src/lib/verify.ts), separate from the UI, so they can be reused in a back-end.
 
-### Deployment
+## Deployment
 
 Every push to `main` publishes the site to GitHub Pages through the [`deploy.yml`](.github/workflows/deploy.yml) workflow. The first time, enable **Settings → Pages → Source: GitHub Actions**.
+
+## Roadmap
+
+The planned work is in [ROADMAP.md](ROADMAP.md).
+
+## License
+
+The code is released under the [MIT License](LICENSE). The vehicle photos in `public/vehicles/` keep their own Wikimedia Commons licences, listed with their authors in [`src/lib/photos.ts`](src/lib/photos.ts).

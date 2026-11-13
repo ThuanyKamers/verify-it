@@ -37,8 +37,9 @@ ou acesso direto ao banco — consegue furar a sequência.
 
 1. Criar um Postgres hospedado (Supabase, Neon, Railway, um servidor próprio...).
 2. Rodar `schema.sql`.
-3. Configurar os endpoints do back-end (`VITE_AUTH_ENDPOINT`, `VITE_BACKEND_ENDPOINT`)
-   — ver `docs/cadastro-login-banco.md`.
+3. Configurar o endpoint do back-end (`VITE_AUTH_ENDPOINT`) num `.env.local`
+   copiado de [`.env.example`](../.env.example). O contrato das rotas está em
+   [`src/lib/auth/remoteAuth.ts`](../src/lib/auth/remoteAuth.ts).
 
 Recomendado: o navegador não fala direto com o banco; uma função no servidor
 guarda a chave secreta e expõe as rotas que o app já espera (nenhum segredo no
