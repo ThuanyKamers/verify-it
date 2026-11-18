@@ -82,7 +82,7 @@ Every push to `main` publishes the site to GitHub Pages through the [`deploy.yml
 
 ## Roadmap
 
-The planned work is in [ROADMAP.md](ROADMAP.md).
+The planned work is in [ROADMAP.md](ROADMAP.md). To help, see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
