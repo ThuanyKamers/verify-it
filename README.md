@@ -74,7 +74,7 @@ npm run build    # production build in dist/
 
 No configuration is needed: without environment variables the app uses a local mock for login and 2FA and keeps data in the browser. To point it at a back-end, copy [`.env.example`](.env.example) to `.env.local` and fill in `VITE_AUTH_ENDPOINT`. `.env` files are ignored by git; never commit real keys.
 
-The business rules live in [`src/lib/verify.ts`](src/lib/verify.ts), separate from the UI, so they can be reused in a back-end.
+The business rules live in [`src/lib/verify.ts`](src/lib/verify.ts), separate from the UI, so they can be reused in a back-end. How the pieces fit together is in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## Deployment
 

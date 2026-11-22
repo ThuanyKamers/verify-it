@@ -1,7 +1,7 @@
 // Contas de usuário: cadastro, login e segundo fator (2FA). Aqui ficam só os
 // contratos (tipos e interface). A implementação padrão é um mock local (para o
 // protótipo); a real depende de um back-end e é ligada depois.
-// Ver docs/cadastro-login-banco.md.
+// Ver docs/ARCHITECTURE.md.
 
 import type { DocumentFiles } from '../documents'
 import type { Role } from '../session'
