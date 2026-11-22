@@ -26,7 +26,7 @@ Verify It is a working prototype: the full seller and buyer flows run in the bro
 
 ## 4. Docs
 
-- [ ] Architecture notes: where the business rules live and how the store and auth providers are swapped.
+- [x] Architecture notes: where the business rules live and how the store and auth providers are swapped: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 - [x] Contributor guide (how to run, test and add a language): [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Not planned for now
