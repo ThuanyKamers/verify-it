@@ -18,7 +18,7 @@ No configuration is needed. Without environment variables the app uses a local m
 Run both before opening a pull request; CI runs the same two commands.
 
 ```bash
-npm test         # Vitest: verification rules, validation, URLs, photos, auth mock
+npm test         # Vitest: verification rules, validation, URLs, photos, auth mock, storage
 npm run build    # type check (tsc) + production build
 ```
 
